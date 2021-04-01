@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "parcel ./src/site/index.html",
+    "devsim": "parcel ./src/simulations/planetaryOrbit/sim.html",
+    "prod": "parcel build ./src/site/index.html"
   },
   "keywords": [],
   "author": "",

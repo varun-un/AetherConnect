@@ -1,0 +1,30 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "devsim",
+			"problemMatcher": [],
+			"label": "npm: devsim",
+			"detail": "parcel ./src/simulations/planetaryOrbit/sim.html",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "npm",
+			"script": "dev",
+			"problemMatcher": [],
+			"label": "npm: dev",
+			"detail": "parcel ./src/site/index.html"
+		},
+		{
+			"type": "npm",
+			"script": "prod",
+			"problemMatcher": [],
+			"label": "npm: prod",
+			"detail": "parcel build ./src/site/index.html"
+		}
+	]
+}
