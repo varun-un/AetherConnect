@@ -1,1 +1,5 @@
+#ignore cache created
 .cache/
+
+#modules should be manually installed
+node_modules

@@ -13,5 +13,8 @@
   "license": "ISC",
   "dependencies": {
     "babylonjs": "^4.2.0"
+  },
+  "devDependencies": {
+    "parcel": "*"
   }
 }
