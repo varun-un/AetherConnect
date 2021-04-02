@@ -1,15 +1,15 @@
 {
   "name": "aether-connect",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Aether Connect is a website that provides 3D simulations to help teach a variety of topics in an easy-to-use, yet engaging, way.",
+  "main": "./site/index.js",
   "scripts": {
     "dev": "parcel ./src/site/index.html",
-    "devsim": "parcel ./src/simulations/planetaryOrbit/sim.html",
+    "devsim": "parcel ./src/simulations/planetaryOrbit/planetary-orbit.html",
     "prod": "parcel build ./src/site/index.html"
   },
   "keywords": [],
-  "author": "",
+  "author": "Varun Unnithan",
   "license": "ISC",
   "dependencies": {
     "babylonjs": "^4.2.0"

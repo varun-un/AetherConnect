@@ -6,7 +6,7 @@
 			"script": "devsim",
 			"problemMatcher": [],
 			"label": "npm: devsim",
-			"detail": "parcel ./src/simulations/planetaryOrbit/sim.html",
+			"detail": "parcel ./src/simulations/planetaryOrbit/planetary-orbit.html",
 			"group": {
 				"kind": "build",
 				"isDefault": true

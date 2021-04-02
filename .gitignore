@@ -1,5 +1,5 @@
 #user/local cache ignored
-.parcel-cache/
+.cache/
 
 #modules should be manually installed
 node_modules
