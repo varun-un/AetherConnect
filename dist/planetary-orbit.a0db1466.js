@@ -157,8 +157,7 @@ function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return 
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-//const BABYLON = window.BABYLON;
-//when browser is loaded, call this function
+//when browser is loaded, create the scene
 window.addEventListener('DOMContentLoaded', function () {
   var canvas = document.getElementById('canvas');
   var engine = new BABYLON.Engine(canvas, true);
@@ -171,15 +170,42 @@ window.addEventListener('DOMContentLoaded', function () {
 
     backgroundMaterial.reflectionTexture = BABYLON.CubeTexture.CreateFromImages([require("../../simAssets/skybox/milkyway/milkyway_px.jpg"), require("../../simAssets/skybox/milkyway/milkyway_py.jpg"), require("../../simAssets/skybox/milkyway/milkyway_pz.jpg"), require("../../simAssets/skybox/milkyway/milkyway_nx.jpg"), require("../../simAssets/skybox/milkyway/milkyway_ny.jpg"), require("../../simAssets/skybox/milkyway/milkyway_nz.jpg")], scene, false);
     backgroundMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-    skybox.material = backgroundMaterial;
-    var box = BABYLON.Mesh.CreateBox("Box", 4.0, scene);
-    var camera = new BABYLON.ArcRotateCamera("arcCamera", BABYLON.Tools.ToRadians(45), BABYLON.Tools.ToRadians(45), 10, box.position, scene);
+    skybox.material = backgroundMaterial; //temp box for render
+
+    var box = BABYLON.Mesh.CreateBox("Box", 1.0, scene); //set arc rotate cam
+
+    var camera = new BABYLON.ArcRotateCamera("arcCamera", BABYLON.Tools.ToRadians(45), BABYLON.Tools.ToRadians(45), 7, box.position, scene);
     camera.attachControl(canvas, true);
-    var light = new BABYLON.PointLight("pointLight", new BABYLON.Vector3(0, 10, 0), scene);
-    light.parent = camera; //makes the light move with the camera
+    camera.lowerRadiusLimit = 2.1;
+    camera.upperRadiusLimit = 400;
+    camera.pinchPrecision = 100.0;
+    camera.wheelDeltaPercentage = 0.02; // Set up rendering pipeline
 
-    light.diffuse = new BABYLON.Color3(1, 1, 1); //sets its color
+    var pipeline = new BABYLON.DefaultRenderingPipeline("default", true, scene); //Anti-Aliasing (add setting to enable/disable this)
+    // pipeline.samples = 4;
+    // pipeline.grainEnabled = true;
+    // pipeline.grain.intensity = 3; 
+    //change exposure/saturation
 
+    scene.imageProcessingConfiguration.toneMappingEnabled = true;
+    scene.imageProcessingConfiguration.toneMappingType = BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
+    scene.imageProcessingConfiguration.exposure = 3; //bloom (optional) (~setting tbd)
+
+    pipeline.bloomEnabled = true;
+    pipeline.bloomThreshold = 1;
+    pipeline.bloomWeight = 0.4;
+    pipeline.bloomKernel = 64;
+    pipeline.bloomScale = 0.5; //create particle system from provided assets
+    //https://github.com/BabylonJS/Assets/blob/master/particles/systems/sun.json
+
+    var sun = new BABYLON.ParticleHelper.CreateAsync("sun", scene).then(function (set) {
+      set.start();
+    }); //loading screen
+
+    engine.displayLoadingUI();
+    scene.executeWhenReady(function () {
+      engine.hideLoadingUI();
+    });
     return scene;
   };
 
@@ -216,7 +242,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "62222" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51465" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
