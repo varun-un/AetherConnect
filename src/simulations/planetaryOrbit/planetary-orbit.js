@@ -54,11 +54,11 @@ window.addEventListener('DOMContentLoaded', function () {
         pipeline.bloomKernel = 64;
         pipeline.bloomScale = 0.5;
 
-        //create particle system from provided assets
-        //https://github.com/BabylonJS/Assets/blob/master/particles/systems/sun.json
-        var sun = new BABYLON.ParticleHelper.CreateAsync("sun", scene).then(function(set) {
+        //create particle system from provided assets: https://github.com/BabylonJS/Assets/blob/master/particles/systems/sun.json
+        var sunParticles = new BABYLON.ParticleHelper.CreateAsync("sun", scene).then(function(set) {
             set.start();
-        });
+        }).catch((issue) => console.log(issue));
+        
 
         //loading screen
         engine.displayLoadingUI();
