@@ -1,6 +1,8 @@
 #user/local cache ignored
 .cache/
 
-#modules should be manually installed
+#modules are manually installed
 node_modules/
 package-lock.json
+
+
