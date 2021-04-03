@@ -7,6 +7,8 @@ window.addEventListener('DOMContentLoaded', function () {
 
     var createScene = function () {
         var scene = new BABYLON.Scene(engine);
+        scene.collisionsEnabled = true;
+
         var selectedMesh;
 
         //gets skybox assets/texture
@@ -18,14 +20,16 @@ window.addEventListener('DOMContentLoaded', function () {
 
         //set arc rotate cam
         var camera = new BABYLON.ArcRotateCamera("arcCamera", 0, 0, 7, BABYLON.Vector3.Zero(), scene);
-        camera.attachControl(canvas, true);   
-        camera.lowerRadiusLimit = 2.1;
+        camera.attachControl(canvas, true);  
+        camera.collisionRadius = new BABYLON.Vector3(1.1,1.1,1.1); 
+        camera.checkCollisions = true;
         camera.upperRadiusLimit = 650;
-        camera.pinchPrecision = 100.0;
-        camera.wheelDeltaPercentage = 0.005;
+        camera.pinchPrecision = 85.0;
+        camera.wheelDeltaPercentage = 0.0025;
         camera.allowUpsideDown = true;
         camera.panningAxis = new BABYLON.Vector3(1,1,0);
         camera.panningInertia = .9;
+        camera.panningSensibility = 850;
         //camera.target = 
         //console.log(camera);
         
@@ -57,12 +61,13 @@ window.addEventListener('DOMContentLoaded', function () {
             set.systems[2].renderingGroupId = 3;
             set.start();
         }).catch((issue) => console.log(issue));
+        var sun = BABYLON.Mesh.CreateSphere("pseudoSun", 32, 2, scene);
 
         //create Earth
-        var earth = BABYLON.Mesh.CreateSphere("earth", 32, 1.0, scene);
-        earth.position.x = 5;
+        var earth = BABYLON.Mesh.CreateSphere("earth", 32, .5, scene);
         earth.position.z = 5;
         earth.rotation = new BABYLON.Vector3(0,0,Math.PI);
+        earth.rotate(BABYLON.Axis.X, BABYLON.Tools.ToRadians(21.5), BABYLON.Space.WORLD);        //earth's tilt on the axis
         earth.renderingGroupId = 3;
 
         //create earth's texture
@@ -83,10 +88,11 @@ window.addEventListener('DOMContentLoaded', function () {
         upLight.intensity = 0.2;
         upLight.includedOnlyMeshes.push(earth);
 
-        //make all meshes pickable
+        //set common settings for all meshes in the scene
         console.log(scene.meshes);
         for (var i = 1; i < scene.meshes.length; i++){
             scene.meshes[i].isPickable = true;
+            scene.meshes[i].checkCollisions = true;
         }
 
 
