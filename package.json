@@ -13,5 +13,10 @@
   "license": "ISC",
   "dependencies": {
     "babylonjs": "^4.2.0"
+  },
+  "devDependencies": {
+    "cssnano": "^4.1.10",
+    "parcel-bundler": "^1.12.5"
+
   }
 }
