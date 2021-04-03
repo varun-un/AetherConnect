@@ -2,4 +2,5 @@
 .cache/
 
 #modules should be manually installed
-node_modules
+node_modules/
+package-lock.json
