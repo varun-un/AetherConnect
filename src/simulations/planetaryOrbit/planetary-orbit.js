@@ -18,10 +18,10 @@ window.addEventListener('DOMContentLoaded', function () {
         //set arc rotate cam
         var camera = new BABYLON.ArcRotateCamera("arcCamera", 0, 0, 7, BABYLON.Vector3.Zero(), scene);
         camera.attachControl(canvas, true);   
-        camera.lowerRadiusLimit = 1.5;
+        camera.lowerRadiusLimit = 2.1;
         camera.upperRadiusLimit = 650;
         camera.pinchPrecision = 100.0;
-        camera.wheelDeltaPercentage = 0.02;
+        camera.wheelDeltaPercentage = 0.005;
         
         
         // Set up rendering pipeline
@@ -46,12 +46,9 @@ window.addEventListener('DOMContentLoaded', function () {
 
         //create particle system from provided assets: https://github.com/BabylonJS/Assets/blob/master/particles/systems/sun.json
         var sunParticles = new BABYLON.ParticleHelper.CreateAsync("sun", scene).then(function(set) {
-            set.start();
-        }).catch((issue) => console.log(issue));
-        
-
-        //create sun particle system from provided assets: https://github.com/BabylonJS/Assets/blob/master/particles/systems/sun.json
-        var sunParticles = new BABYLON.ParticleHelper.CreateAsync("sun", scene).then(function(set) {
+            set.systems[0].renderingGroupId = 3;
+            set.systems[1].renderingGroupId = 1;
+            set.systems[2].renderingGroupId = 3;
             set.start();
         }).catch((issue) => console.log(issue));
 
@@ -61,18 +58,21 @@ window.addEventListener('DOMContentLoaded', function () {
         earth.position.z = 15;
         earth.renderingGroupId = 3;
 
-        var material = new BABYLON.StandardMaterial("material1", scene);
-        material.diffuseColor = BABYLON.Color3.Red();
-        material.specularColor = new BABYLON.Color3(0, 0, 0);
-        earth.material = material;
+        //create earth's texture
+        var earthMat = new BABYLON.StandardMaterial("earth-material", scene);
+        earthMat.diffuseTexture = new BABYLON.Texture(require("../../simAssets/earthTextures/2k-earth-daymap.jpg"), scene);
+        earthMat.bumpTexture = new BABYLON.Texture(require("../../simAssets/earthTextures/2k-earth-normal.jpg"), scene);
+        earthMat.bumpTexture.level = 1.5;
+        earthMat.specularColor = new BABYLON.Color3(0, 0, 0);
+        earth.material = earthMat;
 
         var sunlight = new BABYLON.PointLight("sunlight", new BABYLON.Vector3(0,0,0), scene);
 
         var downLight = new BABYLON.HemisphericLight("downlight", new BABYLON.Vector3(0, 1, 0), scene);
-        downLight.intensity = 0.4;
+        downLight.intensity = 0.2;
         downLight.includedOnlyMeshes.push(earth);
         var upLight = new BABYLON.HemisphericLight("uplight", new BABYLON.Vector3(0, -1, 0), scene);
-        upLight.intensity = 0.4;
+        upLight.intensity = 0.2;
         upLight.includedOnlyMeshes.push(earth);
 
 

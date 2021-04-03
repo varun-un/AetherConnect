@@ -148,6 +148,10 @@ module.exports = "/milkyway_nx.33a5a88e.jpg";
 module.exports = "/milkyway_ny.f3ef5a54.jpg";
 },{}],"../../simAssets/skybox/milkyway/milkyway_nz.jpg":[function(require,module,exports) {
 module.exports = "/milkyway_nz.29b2ff03.jpg";
+},{}],"../../simAssets/earthTextures/2k-earth-daymap.jpg":[function(require,module,exports) {
+module.exports = "/2k-earth-daymap.bc6ac015.jpg";
+},{}],"../../simAssets/earthTextures/2k-earth-normal.jpg":[function(require,module,exports) {
+module.exports = "/2k-earth-normal.90adbe17.jpg";
 },{}],"planetary-orbit.js":[function(require,module,exports) {
 "use strict";
 
@@ -170,10 +174,10 @@ window.addEventListener('DOMContentLoaded', function () {
 
     var camera = new BABYLON.ArcRotateCamera("arcCamera", 0, 0, 7, BABYLON.Vector3.Zero(), scene);
     camera.attachControl(canvas, true);
-    camera.lowerRadiusLimit = 1.5;
+    camera.lowerRadiusLimit = 2.1;
     camera.upperRadiusLimit = 650;
     camera.pinchPrecision = 100.0;
-    camera.wheelDeltaPercentage = 0.02; // Set up rendering pipeline
+    camera.wheelDeltaPercentage = 0.005; // Set up rendering pipeline
 
     var pipeline = new BABYLON.DefaultRenderingPipeline("default", true, scene); //Anti-Aliasing (add setting to enable/disable this)
     // pipeline.samples = 4;
@@ -192,12 +196,9 @@ window.addEventListener('DOMContentLoaded', function () {
     pipeline.bloomScale = 0.5; //create particle system from provided assets: https://github.com/BabylonJS/Assets/blob/master/particles/systems/sun.json
 
     var sunParticles = new BABYLON.ParticleHelper.CreateAsync("sun", scene).then(function (set) {
-      set.start();
-    }).catch(function (issue) {
-      return console.log(issue);
-    }); //create sun particle system from provided assets: https://github.com/BabylonJS/Assets/blob/master/particles/systems/sun.json
-
-    var sunParticles = new BABYLON.ParticleHelper.CreateAsync("sun", scene).then(function (set) {
+      set.systems[0].renderingGroupId = 3;
+      set.systems[1].renderingGroupId = 1;
+      set.systems[2].renderingGroupId = 3;
       set.start();
     }).catch(function (issue) {
       return console.log(issue);
@@ -206,17 +207,20 @@ window.addEventListener('DOMContentLoaded', function () {
     var earth = BABYLON.Mesh.CreateSphere("earth", 32, 15.0, scene);
     earth.position.x = 15;
     earth.position.z = 15;
-    earth.renderingGroupId = 3;
-    var material = new BABYLON.StandardMaterial("material1", scene);
-    material.diffuseColor = BABYLON.Color3.Red();
-    material.specularColor = new BABYLON.Color3(0, 0, 0);
-    earth.material = material;
+    earth.renderingGroupId = 3; //create earth's texture
+
+    var earthMat = new BABYLON.StandardMaterial("earth-material", scene);
+    earthMat.diffuseTexture = new BABYLON.Texture(require("../../simAssets/earthTextures/2k-earth-daymap.jpg"), scene);
+    earthMat.bumpTexture = new BABYLON.Texture(require("../../simAssets/earthTextures/2k-earth-normal.jpg"), scene);
+    earthMat.bumpTexture.level = 1.5;
+    earthMat.specularColor = new BABYLON.Color3(0, 0, 0);
+    earth.material = earthMat;
     var sunlight = new BABYLON.PointLight("sunlight", new BABYLON.Vector3(0, 0, 0), scene);
     var downLight = new BABYLON.HemisphericLight("downlight", new BABYLON.Vector3(0, 1, 0), scene);
-    downLight.intensity = 0.4;
+    downLight.intensity = 0.2;
     downLight.includedOnlyMeshes.push(earth);
     var upLight = new BABYLON.HemisphericLight("uplight", new BABYLON.Vector3(0, -1, 0), scene);
-    upLight.intensity = 0.4;
+    upLight.intensity = 0.2;
     upLight.includedOnlyMeshes.push(earth); //loading screen
 
     engine.displayLoadingUI();
@@ -231,7 +235,7 @@ window.addEventListener('DOMContentLoaded', function () {
     scene.render();
   });
 });
-},{"babylonjs":"../../../node_modules/babylonjs/babylon.js","../../simAssets/skybox/milkyway/milkyway_px.jpg":"../../simAssets/skybox/milkyway/milkyway_px.jpg","../../simAssets/skybox/milkyway/milkyway_py.jpg":"../../simAssets/skybox/milkyway/milkyway_py.jpg","../../simAssets/skybox/milkyway/milkyway_pz.jpg":"../../simAssets/skybox/milkyway/milkyway_pz.jpg","../../simAssets/skybox/milkyway/milkyway_nx.jpg":"../../simAssets/skybox/milkyway/milkyway_nx.jpg","../../simAssets/skybox/milkyway/milkyway_ny.jpg":"../../simAssets/skybox/milkyway/milkyway_ny.jpg","../../simAssets/skybox/milkyway/milkyway_nz.jpg":"../../simAssets/skybox/milkyway/milkyway_nz.jpg"}],"../../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"babylonjs":"../../../node_modules/babylonjs/babylon.js","../../simAssets/skybox/milkyway/milkyway_px.jpg":"../../simAssets/skybox/milkyway/milkyway_px.jpg","../../simAssets/skybox/milkyway/milkyway_py.jpg":"../../simAssets/skybox/milkyway/milkyway_py.jpg","../../simAssets/skybox/milkyway/milkyway_pz.jpg":"../../simAssets/skybox/milkyway/milkyway_pz.jpg","../../simAssets/skybox/milkyway/milkyway_nx.jpg":"../../simAssets/skybox/milkyway/milkyway_nx.jpg","../../simAssets/skybox/milkyway/milkyway_ny.jpg":"../../simAssets/skybox/milkyway/milkyway_ny.jpg","../../simAssets/skybox/milkyway/milkyway_nz.jpg":"../../simAssets/skybox/milkyway/milkyway_nz.jpg","../../simAssets/earthTextures/2k-earth-daymap.jpg":"../../simAssets/earthTextures/2k-earth-daymap.jpg","../../simAssets/earthTextures/2k-earth-normal.jpg":"../../simAssets/earthTextures/2k-earth-normal.jpg"}],"../../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -259,7 +263,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61238" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61837" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
