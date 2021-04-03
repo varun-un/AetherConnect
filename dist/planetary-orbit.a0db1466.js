@@ -169,7 +169,17 @@ window.addEventListener('DOMContentLoaded', function () {
   var createScene = function createScene() {
     var scene = new BABYLON.Scene(engine);
     scene.collisionsEnabled = true;
-    var selectedMesh; //gets skybox assets/texture
+    var selectedMesh;
+    var pressedKeys = {};
+
+    window.onkeyup = function (e) {
+      pressedKeys[e.keyCode] = false;
+    };
+
+    window.onkeydown = function (e) {
+      pressedKeys[e.keyCode] = true;
+    }; //gets skybox assets/texture
+
 
     var envTexture = BABYLON.CubeTexture.CreateFromImages([require("../../simAssets/skybox/milkyway/milkyway_px.jpg"), require("../../simAssets/skybox/milkyway/milkyway_py.jpg"), require("../../simAssets/skybox/milkyway/milkyway_pz.jpg"), require("../../simAssets/skybox/milkyway/milkyway_nx.jpg"), require("../../simAssets/skybox/milkyway/milkyway_ny.jpg"), require("../../simAssets/skybox/milkyway/milkyway_nz.jpg")], scene, false);
     scene.createDefaultSkybox(envTexture, false, 1000); //set arc rotate cam
@@ -212,7 +222,7 @@ window.addEventListener('DOMContentLoaded', function () {
     }).catch(function (issue) {
       return console.log(issue);
     });
-    var sun = BABYLON.Mesh.CreateSphere("pseudoSun", 32, 2, scene); //create Earth
+    var sun = BABYLON.Mesh.CreateSphere("pseudoSun", 32, 2.1, scene); //create Earth
 
     var earth = BABYLON.Mesh.CreateSphere("earth", 32, .5, scene);
     earth.position.z = 5;
@@ -236,11 +246,18 @@ window.addEventListener('DOMContentLoaded', function () {
     upLight.intensity = 0.2;
     upLight.includedOnlyMeshes.push(earth); //set common settings for all meshes in the scene
 
-    console.log(scene.meshes);
-
     for (var i = 1; i < scene.meshes.length; i++) {
-      scene.meshes[i].isPickable = true;
       scene.meshes[i].checkCollisions = true;
+      scene.meshes[i].actionManager = new BABYLON.ActionManager(scene);
+      scene.meshes[i].actionManager.registerAction(new BABYLON.InterpolateValueAction( //camera rotate
+      BABYLON.ActionManager.OnLeftPickTrigger, camera, 'target', scene.meshes[i].position, 300, new BABYLON.PredicateCondition(scene.meshes[i].actionManager, function () {
+        return pressedKeys["70"];
+      })));
+      scene.meshes[i].actionManager.registerAction(new BABYLON.InterpolateValueAction( //zoom
+      BABYLON.ActionManager.OnLeftPickTrigger, camera, 'radius', 1.5, 300, new BABYLON.PredicateCondition(scene.meshes[i].actionManager, function () {
+        return pressedKeys["70"];
+      })));
+      console.log(scene.meshes[i]);
     }
 
     function showWorldAxis(size) {
@@ -313,7 +330,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51610" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53237" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

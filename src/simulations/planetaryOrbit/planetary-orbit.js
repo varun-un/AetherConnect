@@ -10,6 +10,9 @@ window.addEventListener('DOMContentLoaded', function () {
         scene.collisionsEnabled = true;
 
         var selectedMesh;
+        var pressedKeys = {};
+        window.onkeyup = function(e) { pressedKeys[e.keyCode] = false; }
+        window.onkeydown = function(e) { pressedKeys[e.keyCode] = true; }
 
         //gets skybox assets/texture
         var envTexture = BABYLON.CubeTexture.CreateFromImages([require("../../simAssets/skybox/milkyway/milkyway_px.jpg"), 
@@ -61,7 +64,7 @@ window.addEventListener('DOMContentLoaded', function () {
             set.systems[2].renderingGroupId = 3;
             set.start();
         }).catch((issue) => console.log(issue));
-        var sun = BABYLON.Mesh.CreateSphere("pseudoSun", 32, 2, scene);
+        var sun = BABYLON.Mesh.CreateSphere("pseudoSun", 32, 2.1, scene);
 
         //create Earth
         var earth = BABYLON.Mesh.CreateSphere("earth", 32, .5, scene);
@@ -89,10 +92,17 @@ window.addEventListener('DOMContentLoaded', function () {
         upLight.includedOnlyMeshes.push(earth);
 
         //set common settings for all meshes in the scene
-        console.log(scene.meshes);
         for (var i = 1; i < scene.meshes.length; i++){
-            scene.meshes[i].isPickable = true;
             scene.meshes[i].checkCollisions = true;
+
+            //make camera focus on mesh when mesh clicked and 'f' key held
+            scene.meshes[i].actionManager = new BABYLON.ActionManager(scene);
+            scene.meshes[i].actionManager.registerAction(new BABYLON.InterpolateValueAction(                  //camera rotate
+                BABYLON.ActionManager.OnLeftPickTrigger, camera, 'target', scene.meshes[i].position, 300,
+                new BABYLON.PredicateCondition(scene.meshes[i].actionManager, () => pressedKeys["70"])));
+            scene.meshes[i].actionManager.registerAction(new BABYLON.InterpolateValueAction(                  //zoom
+                BABYLON.ActionManager.OnLeftPickTrigger, camera, 'radius', 1.5, 300,
+                new BABYLON.PredicateCondition(scene.meshes[i].actionManager, () => pressedKeys["70"])));
         }
 
 
