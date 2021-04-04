@@ -194,9 +194,7 @@ window.addEventListener('DOMContentLoaded', function () {
     camera.allowUpsideDown = true;
     camera.panningAxis = new BABYLON.Vector3(1, 1, 0);
     camera.panningInertia = .9;
-    camera.panningSensibility = 850; //camera.target = 
-    //console.log(camera);
-    // Set up rendering pipeline
+    camera.panningSensibility = 850; // Set up rendering pipeline
 
     var pipeline = new BABYLON.DefaultRenderingPipeline("default", true, scene); //Anti-Aliasing (add setting to enable/disable this)
     // pipeline.samples = 4;
@@ -226,17 +224,34 @@ window.addEventListener('DOMContentLoaded', function () {
 
     var earth = BABYLON.Mesh.CreateSphere("earth", 32, .5, scene);
     earth.position.z = 5;
-    earth.rotation = new BABYLON.Vector3(0, 0, Math.PI);
-    earth.rotate(BABYLON.Axis.X, BABYLON.Tools.ToRadians(21.5), BABYLON.Space.WORLD); //earth's tilt on the axis
+    earth.rotation = new BABYLON.Vector3(BABYLON.Tools.ToRadians(21.5), 0, Math.PI); //earth's axis tilt
 
     earth.renderingGroupId = 3; //create earth's texture
 
     var earthMat = new BABYLON.StandardMaterial("earth-material", scene);
     earthMat.diffuseTexture = new BABYLON.Texture(require("../../simAssets/earthTextures/2k-earth-daymap.jpg"), scene);
     earthMat.bumpTexture = new BABYLON.Texture(require("../../simAssets/earthTextures/2k-earth-normal.jpg"), scene);
-    earthMat.bumpTexture.level = 1.5;
+    earthMat.bumpTexture.level = 2;
     earthMat.specularColor = new BABYLON.Color3(0, 0, 0);
     earth.material = earthMat;
+    var frameRate = 60; //create earth's rotation animation
+
+    var earthRotAnim = new BABYLON.Animation("ERA", "rotation.y", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+    var earthRotKeys = [];
+    earthRotKeys.push({
+      frame: 0,
+      value: 0
+    });
+    earthRotKeys.push({
+      frame: frameRate,
+      value: 3.14
+    });
+    earthRotKeys.push({
+      frame: 2 * frameRate,
+      value: 6.28
+    });
+    earthRotAnim.setKeys(earthRotKeys);
+    var earthRotAnimatable = scene.beginDirectAnimation(earth, [earthRotAnim], 0, 2 * frameRate, true, .25);
     var sunlight = new BABYLON.PointLight("sunlight", new BABYLON.Vector3(0, 0, 0), scene); //environment lighting
 
     var downLight = new BABYLON.HemisphericLight("downlight", new BABYLON.Vector3(0, 1, 0), scene);
@@ -247,7 +262,8 @@ window.addEventListener('DOMContentLoaded', function () {
     upLight.includedOnlyMeshes.push(earth); //set common settings for all meshes in the scene
 
     for (var i = 1; i < scene.meshes.length; i++) {
-      scene.meshes[i].checkCollisions = true;
+      scene.meshes[i].checkCollisions = true; //make camera focus on mesh when mesh clicked and 'f' key held
+
       scene.meshes[i].actionManager = new BABYLON.ActionManager(scene);
       scene.meshes[i].actionManager.registerAction(new BABYLON.InterpolateValueAction( //camera rotate
       BABYLON.ActionManager.OnLeftPickTrigger, camera, 'target', scene.meshes[i].position, 300, new BABYLON.PredicateCondition(scene.meshes[i].actionManager, function () {
@@ -257,7 +273,6 @@ window.addEventListener('DOMContentLoaded', function () {
       BABYLON.ActionManager.OnLeftPickTrigger, camera, 'radius', 1.5, 300, new BABYLON.PredicateCondition(scene.meshes[i].actionManager, function () {
         return pressedKeys["70"];
       })));
-      console.log(scene.meshes[i]);
     }
 
     function showWorldAxis(size) {
@@ -288,7 +303,24 @@ window.addEventListener('DOMContentLoaded', function () {
     }
 
     ;
-    showWorldAxis(15); //loading screen
+    showWorldAxis(15);
+
+    function localAxes(size, mesh) {
+      var pilot_local_axisX = BABYLON.Mesh.CreateLines("pilot_local_axisX", [new BABYLON.Vector3.Zero(), new BABYLON.Vector3(size, 0, 0), new BABYLON.Vector3(size * 0.95, 0.05 * size, 0), new BABYLON.Vector3(size, 0, 0), new BABYLON.Vector3(size * 0.95, -0.05 * size, 0)], scene);
+      pilot_local_axisX.color = new BABYLON.Color3(1, 0, 0);
+      var pilot_local_axisY = BABYLON.Mesh.CreateLines("pilot_local_axisY", [new BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, size, 0), new BABYLON.Vector3(-0.05 * size, size * 0.95, 0), new BABYLON.Vector3(0, size, 0), new BABYLON.Vector3(0.05 * size, size * 0.95, 0)], scene);
+      pilot_local_axisY.color = new BABYLON.Color3(0, 1, 0);
+      var pilot_local_axisZ = BABYLON.Mesh.CreateLines("pilot_local_axisZ", [new BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, 0, size), new BABYLON.Vector3(0, -0.05 * size, size * 0.95), new BABYLON.Vector3(0, 0, size), new BABYLON.Vector3(0, 0.05 * size, size * 0.95)], scene);
+      pilot_local_axisZ.color = new BABYLON.Color3(0, 0, 1);
+      var local_origin = mesh.clone("testerHee");
+      local_origin.isVisible = false;
+      pilot_local_axisX.parent = local_origin;
+      pilot_local_axisY.parent = local_origin;
+      pilot_local_axisZ.parent = local_origin;
+      return local_origin;
+    }
+
+    localAxes(4, earth); //loading screen
 
     engine.displayLoadingUI();
     scene.executeWhenReady(function () {
@@ -300,6 +332,9 @@ window.addEventListener('DOMContentLoaded', function () {
   var scene = createScene();
   engine.runRenderLoop(function () {
     scene.render();
+  });
+  window.addEventListener("resize", function () {
+    engine.resize();
   });
 });
 },{"babylonjs":"../../../node_modules/babylonjs/babylon.js","../../simAssets/skybox/milkyway/milkyway_px.jpg":"../../simAssets/skybox/milkyway/milkyway_px.jpg","../../simAssets/skybox/milkyway/milkyway_py.jpg":"../../simAssets/skybox/milkyway/milkyway_py.jpg","../../simAssets/skybox/milkyway/milkyway_pz.jpg":"../../simAssets/skybox/milkyway/milkyway_pz.jpg","../../simAssets/skybox/milkyway/milkyway_nx.jpg":"../../simAssets/skybox/milkyway/milkyway_nx.jpg","../../simAssets/skybox/milkyway/milkyway_ny.jpg":"../../simAssets/skybox/milkyway/milkyway_ny.jpg","../../simAssets/skybox/milkyway/milkyway_nz.jpg":"../../simAssets/skybox/milkyway/milkyway_nz.jpg","../../simAssets/earthTextures/2k-earth-daymap.jpg":"../../simAssets/earthTextures/2k-earth-daymap.jpg","../../simAssets/earthTextures/2k-earth-normal.jpg":"../../simAssets/earthTextures/2k-earth-normal.jpg"}],"../../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
@@ -330,7 +365,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53237" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55549" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
