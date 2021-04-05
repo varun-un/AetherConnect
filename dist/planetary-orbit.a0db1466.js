@@ -266,9 +266,8 @@ window.addEventListener('DOMContentLoaded', function () {
     pipeline.bloomThreshold = 1;
     pipeline.bloomWeight = 0.4;
     pipeline.bloomKernel = 64;
-    pipeline.bloomScale = 0.5; //create particle system from modified assets: https://github.com/BabylonJS/Assets/blob/master/particles/systems/sun.json
+    pipeline.bloomScale = 0.5; //create particle system from provided assets: https://github.com/BabylonJS/Assets/blob/master/particles/systems/sun.json
 
-    BABYLON.ParticleHelper.BaseAssetsUrl = "../../simAssets/particleSystems";
     var sunParticles = new BABYLON.ParticleHelper.CreateAsync("sun", scene).then(function (set) {
       set.systems[0].renderingGroupId = 3;
       set.systems[1].renderingGroupId = 1;
@@ -411,7 +410,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60928" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61465" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

@@ -57,8 +57,7 @@ window.addEventListener('DOMContentLoaded', function () {
         pipeline.bloomKernel = 64;
         pipeline.bloomScale = 0.5;
 
-        //create particle system from modified assets: https://github.com/BabylonJS/Assets/blob/master/particles/systems/sun.json
-        BABYLON.ParticleHelper.BaseAssetsUrl = "../../simAssets/particleSystems";
+        //create particle system from provided assets: https://github.com/BabylonJS/Assets/blob/master/particles/systems/sun.json
         var sunParticles = new BABYLON.ParticleHelper.CreateAsync("sun", scene).then(function(set) {
             set.systems[0].renderingGroupId = 3;
             set.systems[1].renderingGroupId = 1;
