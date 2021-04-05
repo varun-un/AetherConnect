@@ -69,6 +69,8 @@ window.addEventListener('DOMContentLoaded', function () {
         earth.position.z = 5;
         earth.rotation = new BABYLON.Vector3(BABYLON.Tools.ToRadians(21.5),0,Math.PI);      //earth's axis tilt
         earth.renderingGroupId = 3;
+        earth["rotYLocal"] = 0;
+        earth["prevRotYLocal"] = 0;
 
         //create earth's texture
         var earthMat = new BABYLON.StandardMaterial("earth-material", scene);
@@ -78,9 +80,9 @@ window.addEventListener('DOMContentLoaded', function () {
         earthMat.specularColor = new BABYLON.Color3(0, 0, 0);
         earth.material = earthMat;
 
-        var frameRate = 60;
+        var frameRate = 30;
         //create earth's rotation animation
-        var earthRotAnim = new BABYLON.Animation("ERA", "rotation.y", frameRate,
+        var earthRotAnim = new BABYLON.Animation("earthRotation", "rotYLocal", frameRate,
              BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
         var earthRotKeys = [];
         earthRotKeys.push({
@@ -89,15 +91,15 @@ window.addEventListener('DOMContentLoaded', function () {
         });
         earthRotKeys.push({
             frame: frameRate,
-            value: 3.14
+            value: Math.PI
         });
         earthRotKeys.push({
             frame: 2 * frameRate,
-            value: 6.28
+            value: 2 * Math.PI
         });
 
         earthRotAnim.setKeys(earthRotKeys);
-        var earthRotAnimatable = scene.beginDirectAnimation(earth, [earthRotAnim], 0, 2 * frameRate, true, .25);
+        var earthRotAnimatable = scene.beginDirectAnimation(earth, [earthRotAnim], 0, 2 * frameRate, true, 1);
 
 
         var sunlight = new BABYLON.PointLight("sunlight", new BABYLON.Vector3(0,0,0), scene);
@@ -123,6 +125,7 @@ window.addEventListener('DOMContentLoaded', function () {
                 BABYLON.ActionManager.OnLeftPickTrigger, camera, 'radius', 1.5, 300,
                 new BABYLON.PredicateCondition(scene.meshes[i].actionManager, () => pressedKeys["70"])));
         }
+
 
 
         function showWorldAxis(size) {
@@ -193,6 +196,7 @@ window.addEventListener('DOMContentLoaded', function () {
         localAxes(4, earth);
 
 
+
         //loading screen
         engine.displayLoadingUI();
         scene.executeWhenReady(function() {
@@ -203,7 +207,12 @@ window.addEventListener('DOMContentLoaded', function () {
     }
 
     var scene = createScene();
-    engine.runRenderLoop(function () {      
+    engine.runRenderLoop(function () {    
+        //update Earth's rotation every frame    
+        var earth = scene.getMeshByName("earth");
+        earth.rotate(BABYLON.Axis.Y, earth.rotYLocal - earth.prevRotYLocal, BABYLON.Space.LOCAL);
+        earth.prevRotYLocal = earth.rotYLocal;
+
         scene.render();
     });
 

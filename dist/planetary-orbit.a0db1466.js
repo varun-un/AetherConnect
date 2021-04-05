@@ -226,7 +226,9 @@ window.addEventListener('DOMContentLoaded', function () {
     earth.position.z = 5;
     earth.rotation = new BABYLON.Vector3(BABYLON.Tools.ToRadians(21.5), 0, Math.PI); //earth's axis tilt
 
-    earth.renderingGroupId = 3; //create earth's texture
+    earth.renderingGroupId = 3;
+    earth["rotYLocal"] = 0;
+    earth["prevRotYLocal"] = 0; //create earth's texture
 
     var earthMat = new BABYLON.StandardMaterial("earth-material", scene);
     earthMat.diffuseTexture = new BABYLON.Texture(require("../../simAssets/earthTextures/2k-earth-daymap.jpg"), scene);
@@ -234,9 +236,9 @@ window.addEventListener('DOMContentLoaded', function () {
     earthMat.bumpTexture.level = 2;
     earthMat.specularColor = new BABYLON.Color3(0, 0, 0);
     earth.material = earthMat;
-    var frameRate = 60; //create earth's rotation animation
+    var frameRate = 30; //create earth's rotation animation
 
-    var earthRotAnim = new BABYLON.Animation("ERA", "rotation.y", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+    var earthRotAnim = new BABYLON.Animation("earthRotation", "rotYLocal", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
     var earthRotKeys = [];
     earthRotKeys.push({
       frame: 0,
@@ -244,14 +246,14 @@ window.addEventListener('DOMContentLoaded', function () {
     });
     earthRotKeys.push({
       frame: frameRate,
-      value: 3.14
+      value: Math.PI
     });
     earthRotKeys.push({
       frame: 2 * frameRate,
-      value: 6.28
+      value: 2 * Math.PI
     });
     earthRotAnim.setKeys(earthRotKeys);
-    var earthRotAnimatable = scene.beginDirectAnimation(earth, [earthRotAnim], 0, 2 * frameRate, true, .25);
+    var earthRotAnimatable = scene.beginDirectAnimation(earth, [earthRotAnim], 0, 2 * frameRate, true, 1);
     var sunlight = new BABYLON.PointLight("sunlight", new BABYLON.Vector3(0, 0, 0), scene); //environment lighting
 
     var downLight = new BABYLON.HemisphericLight("downlight", new BABYLON.Vector3(0, 1, 0), scene);
@@ -331,6 +333,10 @@ window.addEventListener('DOMContentLoaded', function () {
 
   var scene = createScene();
   engine.runRenderLoop(function () {
+    //update Earth's rotation every frame    
+    var earth = scene.getMeshByName("earth");
+    earth.rotate(BABYLON.Axis.Y, earth.rotYLocal - earth.prevRotYLocal, BABYLON.Space.LOCAL);
+    earth.prevRotYLocal = earth.rotYLocal;
     scene.render();
   });
   window.addEventListener("resize", function () {
@@ -365,7 +371,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55549" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54019" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
