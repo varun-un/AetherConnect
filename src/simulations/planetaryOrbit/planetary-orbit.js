@@ -1,4 +1,5 @@
 import * as BABYLON from 'babylonjs';
+import {rotatePlanet} from './planet-movements';
 
 //when browser is loaded, create the scene
 window.addEventListener('DOMContentLoaded', function () {
@@ -8,6 +9,7 @@ window.addEventListener('DOMContentLoaded', function () {
     var createScene = function () {
         var scene = new BABYLON.Scene(engine);
         scene.collisionsEnabled = true;
+        scene["planets"] = [];
 
         var selectedMesh;
         var pressedKeys = {};
@@ -26,7 +28,7 @@ window.addEventListener('DOMContentLoaded', function () {
         camera.attachControl(canvas, true);  
         camera.collisionRadius = new BABYLON.Vector3(1.1,1.1,1.1); 
         camera.checkCollisions = true;
-        camera.upperRadiusLimit = 650;
+        camera.upperRadiusLimit = 600;
         camera.pinchPrecision = 85.0;
         camera.wheelDeltaPercentage = 0.0025;
         camera.allowUpsideDown = true;
@@ -55,54 +57,34 @@ window.addEventListener('DOMContentLoaded', function () {
         pipeline.bloomKernel = 64;
         pipeline.bloomScale = 0.5;
 
-        //create particle system from provided assets: https://github.com/BabylonJS/Assets/blob/master/particles/systems/sun.json
+        //create particle system from modified assets: https://github.com/BabylonJS/Assets/blob/master/particles/systems/sun.json
+        BABYLON.ParticleHelper.BaseAssetsUrl = "../../simAssets/particleSystems";
         var sunParticles = new BABYLON.ParticleHelper.CreateAsync("sun", scene).then(function(set) {
             set.systems[0].renderingGroupId = 3;
             set.systems[1].renderingGroupId = 1;
             set.systems[2].renderingGroupId = 3;
             set.start();
-        }).catch((issue) => console.log(issue));
+        }).catch((issue) => console.error (issue));
         var sun = BABYLON.Mesh.CreateSphere("pseudoSun", 32, 2.1, scene);
 
         //create Earth
         var earth = BABYLON.Mesh.CreateSphere("earth", 32, .5, scene);
         earth.position.z = 5;
-        earth.rotation = new BABYLON.Vector3(BABYLON.Tools.ToRadians(21.5),0,Math.PI);      //earth's axis tilt
         earth.renderingGroupId = 3;
-        earth["rotYLocal"] = 0;
-        earth["prevRotYLocal"] = 0;
+        scene.planets.push(earth);
 
         //create earth's texture
         var earthMat = new BABYLON.StandardMaterial("earth-material", scene);
         earthMat.diffuseTexture = new BABYLON.Texture(require("../../simAssets/earthTextures/2k-earth-daymap.jpg"), scene);
-        earthMat.bumpTexture = new BABYLON.Texture(require("../../simAssets/earthTextures/2k-earth-normal.jpg"), scene);
-        earthMat.bumpTexture.level = 2;
+        // earthMat.bumpTexture = new BABYLON.Texture(require("../../simAssets/earthTextures/2k-earth-normal.jpg"), scene);
+        // earthMat.bumpTexture.level = 8;
         earthMat.specularColor = new BABYLON.Color3(0, 0, 0);
         earth.material = earthMat;
 
-        var frameRate = 30;
-        //create earth's rotation animation
-        var earthRotAnim = new BABYLON.Animation("earthRotation", "rotYLocal", frameRate,
-             BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-        var earthRotKeys = [];
-        earthRotKeys.push({
-            frame: 0,
-            value: 0
-        });
-        earthRotKeys.push({
-            frame: frameRate,
-            value: Math.PI
-        });
-        earthRotKeys.push({
-            frame: 2 * frameRate,
-            value: 2 * Math.PI
-        });
-
-        earthRotAnim.setKeys(earthRotKeys);
-        var earthRotAnimatable = scene.beginDirectAnimation(earth, [earthRotAnim], 0, 2 * frameRate, true, 1);
-
+        var earthRotAnimatable = rotatePlanet(earth, 22.5, 1, scene, true);
 
         var sunlight = new BABYLON.PointLight("sunlight", new BABYLON.Vector3(0,0,0), scene);
+        sunlight.intensity = 1.5;
 
         //environment lighting
         var downLight = new BABYLON.HemisphericLight("downlight", new BABYLON.Vector3(0, 1, 0), scene);
@@ -208,10 +190,12 @@ window.addEventListener('DOMContentLoaded', function () {
 
     var scene = createScene();
     engine.runRenderLoop(function () {    
-        //update Earth's rotation every frame    
-        var earth = scene.getMeshByName("earth");
-        earth.rotate(BABYLON.Axis.Y, earth.rotYLocal - earth.prevRotYLocal, BABYLON.Space.LOCAL);
-        earth.prevRotYLocal = earth.rotYLocal;
+
+        //planet rotations
+        for (var i = 0; i < scene.planets.length; i++){
+            scene.planets[i].rotate(BABYLON.Axis.Y, scene.planets[i].rotYLocal - scene.planets[i].prevRotYLocal, BABYLON.Space.LOCAL);
+            scene.planets[i].prevRotYLocal = scene.planets[i].rotYLocal;    
+        }
 
         scene.render();
     });
