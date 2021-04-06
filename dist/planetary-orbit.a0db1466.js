@@ -142,7 +142,7 @@ var n=function(e,t){return(n=Object.setPrototypeOf||{__proto__:[]}instanceof Arr
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.calcOrbitPath = exports.rotatePlanet = void 0;
+exports.animOrbit = exports.rotatePlanet = void 0;
 
 var BABYLON = _interopRequireWildcard(require("babylonjs"));
 
@@ -174,23 +174,100 @@ var rotatePlanet = function rotatePlanet(planet, tilt, dayLength, scene) {
     value: 0
   });
   planetRotKeys.push({
-    frame: frameRate,
+    frame: 2 * frameRate,
     value: Math.PI / dayLength
   });
   planetRotKeys.push({
-    frame: 2 * frameRate,
+    frame: 4 * frameRate,
     value: 2 * Math.PI / dayLength
   });
   planetRotAnim.setKeys(planetRotKeys);
-  var animatable = scene.beginDirectAnimation(planet, [planetRotAnim], 0, 2 * frameRate, loops, 1);
+  var animatable = scene.beginDirectAnimation(planet, [planetRotAnim], 0, 4 * frameRate, loops, 1);
   return animatable;
 };
+/**
+ * Models and animates the orbit of a planet
+ * @param {*} planet - The planet mesh for which to animate the orbit
+ * @param {*} eccentricity - The eccentricity of the planet's orbit, as a value between 0 and 1
+ * @param {*} period - The length of time for one full revolution of orbit, in Earth days
+ * @param {*} a - The length of the semi-major axis of the orbit's ellipse (in scene units)
+ * @param {*} scene - The scene on which this animation occurs
+ * @returns An animatable representing the planet's orbit
+ */
+
 
 exports.rotatePlanet = rotatePlanet;
 
-var calcOrbitPath = function calcOrbitPath() {};
+var animOrbit = function animOrbit(planet, eccentricity, period, a, scene) {
+  //solves Kepler's equation for a given time t since the perihelion passing using Newton's methods
+  var newtonianMethod = function newtonianMethod(eccentricity, time, period) {
+    var diff = 100.0;
+    var epsilon = .0000001; //target difference
 
-exports.calcOrbitPath = calcOrbitPath;
+    var E_new;
+    var Mean_anomaly = Math.PI * 2 / (period * 24 * 60) * time;
+    var direction = 1; //If M is > pi, then set it to its negative angle equivalent, but make E be negative to account for it
+
+    if (Mean_anomaly > Math.PI) {
+      Mean_anomaly = Math.PI * 2 - Mean_anomaly;
+      direction = -1;
+    }
+
+    var E_old = Mean_anomaly + eccentricity / 2.0; //starting Eccentric Anomaly
+    //loop until precision good
+
+    while (diff > epsilon) {
+      E_new = E_old - (E_old - eccentricity * Math.sin(E_old) - Mean_anomaly) / (1 - eccentricity * Math.cos(E_old));
+      diff = Math.abs(E_old - E_new);
+      E_old = E_new;
+    }
+
+    return E_new * direction;
+  }; //define path using steps of 6 minutes
+
+
+  var path = [];
+
+  for (var i = 0; i < period * 24 * 10; i++) {
+    var E = newtonianMethod(eccentricity, 6 * i, period); //time in mins and period in days
+    //get polar coordinates
+
+    var r = a * (1 - eccentricity * Math.cos(E));
+    var theta = 2 * Math.atan(Math.sqrt((eccentricity + 1) / (1 - eccentricity)) * Math.tan(E / 2)); //push cartesian points into array
+
+    path.push(new BABYLON.Vector3(-1 * r * Math.sin(theta), 0, r * Math.cos(theta)));
+  }
+
+  var track = BABYLON.MeshBuilder.CreateLines(planet.name + 'Track', {
+    points: path,
+    updatable: true
+  }, scene);
+  track.color = new BABYLON.Color3(.75, .75, .75);
+  track.renderingGroupId = 3;
+  var frameRate = 60;
+  planet["orbitSegment"] = 0;
+  planet["ellipse"] = path; //create planet's orbit animation             
+
+  var planetOrbitAnim = new BABYLON.Animation(planet.name + "Orbit", "orbitSegment", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+  var planetOrbitKeys = [];
+  planetOrbitKeys.push({
+    frame: 0,
+    value: 0
+  });
+  planetOrbitKeys.push({
+    frame: period * 24 * 5,
+    value: period * 24 * 5
+  });
+  planetOrbitKeys.push({
+    frame: period * 24 * 10,
+    value: period * 24 * 10
+  });
+  planetOrbitAnim.setKeys(planetOrbitKeys);
+  var animatable = scene.beginDirectAnimation(planet, [planetOrbitAnim], 0, period * 24 * 10, true, 1);
+  return animatable;
+};
+
+exports.animOrbit = animOrbit;
 },{"babylonjs":"../../../node_modules/babylonjs/babylon.js"}],"../../simAssets/skybox/milkyway/milkyway_px.jpg":[function(require,module,exports) {
 module.exports = "/milkyway_px.50373010.jpg";
 },{}],"../../simAssets/skybox/milkyway/milkyway_py.jpg":[function(require,module,exports) {
@@ -205,6 +282,8 @@ module.exports = "/milkyway_ny.f3ef5a54.jpg";
 module.exports = "/milkyway_nz.29b2ff03.jpg";
 },{}],"../../simAssets/earthTextures/2k-earth-daymap.jpg":[function(require,module,exports) {
 module.exports = "/2k-earth-daymap.bc6ac015.jpg";
+},{}],"../../simAssets/earthTextures/2k-earth-normal.jpg":[function(require,module,exports) {
+module.exports = "/2k-earth-normal.90adbe17.jpg";
 },{}],"planetary-orbit.js":[function(require,module,exports) {
 "use strict";
 
@@ -280,7 +359,6 @@ window.addEventListener('DOMContentLoaded', function () {
       set.systems[1].maxScaleY = 1.75;
       set.systems[2].maxScaleX = 2.75;
       set.systems[2].maxScaleY = 2.75;
-      console.log(set);
       set.start();
     }).catch(function (issue) {
       return console.error(issue);
@@ -288,17 +366,16 @@ window.addEventListener('DOMContentLoaded', function () {
     var sun = BABYLON.Mesh.CreateSphere("pseudoSun", 32, 4.1, scene); //create Earth
 
     var earth = BABYLON.Mesh.CreateSphere("earth", 32, .5, scene);
-    earth.position.z = 5;
+    earth.position.z = 10;
     earth.renderingGroupId = 3;
     scene.planets.push(earth); //create earth's texture
 
     var earthMat = new BABYLON.StandardMaterial("earth-material", scene);
-    earthMat.diffuseTexture = new BABYLON.Texture(require("../../simAssets/earthTextures/2k-earth-daymap.jpg"), scene); // earthMat.bumpTexture = new BABYLON.Texture(require("../../simAssets/earthTextures/2k-earth-normal.jpg"), scene);
-    // earthMat.bumpTexture.level = 8;
-
+    earthMat.diffuseTexture = new BABYLON.Texture(require("../../simAssets/earthTextures/2k-earth-daymap.jpg"), scene);
+    earthMat.bumpTexture = new BABYLON.Texture(require("../../simAssets/earthTextures/2k-earth-normal.jpg"), scene);
+    earthMat.bumpTexture.level = 8;
     earthMat.specularColor = new BABYLON.Color3(0, 0, 0);
     earth.material = earthMat;
-    var earthRotAnimatable = (0, _planetMovements.rotatePlanet)(earth, 22.5, 1, scene, true);
     var sunlight = new BABYLON.PointLight("sunlight", new BABYLON.Vector3(0, 0, 0), scene);
     sunlight.intensity = 1.5; //environment lighting
 
@@ -307,7 +384,7 @@ window.addEventListener('DOMContentLoaded', function () {
     downLight.includedOnlyMeshes.push(earth);
     var upLight = new BABYLON.HemisphericLight("uplight", new BABYLON.Vector3(0, -1, 0), scene);
     upLight.intensity = 0.2;
-    upLight.includedOnlyMeshes.push(earth); //set common settings for all meshes in the scene
+    upLight.includedOnlyMeshes.push(earth); //set settings for focusing and camera action w/ meshes in scene
 
     for (var i = 1; i < scene.meshes.length; i++) {
       scene.meshes[i].checkCollisions = true; //make camera focus on mesh when mesh clicked and 'f' key held
@@ -321,7 +398,16 @@ window.addEventListener('DOMContentLoaded', function () {
       BABYLON.ActionManager.OnLeftPickTrigger, camera, 'radius', 1.5, 300, new BABYLON.PredicateCondition(scene.meshes[i].actionManager, function () {
         return pressedKeys["70"];
       })));
-    }
+    } //create animations for planet rotations
+
+
+    var earthRotAnimatable = (0, _planetMovements.rotatePlanet)(earth, 22.5, 1, scene, true); //create animations for planet orbits
+
+    var earthOrbitAnimatable = (0, _planetMovements.animOrbit)(earth, 0.01671, 365, 10, scene);
+    setInterval(function () {
+      earthOrbitAnimatable.speedRatio += 25;
+      console.log(earthOrbitAnimatable.speedRatio);
+    }, 5000);
 
     function showWorldAxis(size) {
       var makeTextPlane = function makeTextPlane(text, color, size) {
@@ -379,10 +465,11 @@ window.addEventListener('DOMContentLoaded', function () {
 
   var scene = createScene();
   engine.runRenderLoop(function () {
-    //planet rotations
+    //planet rotations and movements
     for (var i = 0; i < scene.planets.length; i++) {
       scene.planets[i].rotate(BABYLON.Axis.Y, scene.planets[i].rotYLocal - scene.planets[i].prevRotYLocal, BABYLON.Space.LOCAL);
       scene.planets[i].prevRotYLocal = scene.planets[i].rotYLocal;
+      scene.planets[i].setAbsolutePosition(scene.planets[i].ellipse[Math.floor(scene.planets[i].orbitSegment)]);
     }
 
     scene.render();
@@ -391,7 +478,7 @@ window.addEventListener('DOMContentLoaded', function () {
     engine.resize();
   });
 });
-},{"babylonjs":"../../../node_modules/babylonjs/babylon.js","./planet-movements":"planet-movements.js","../../simAssets/skybox/milkyway/milkyway_px.jpg":"../../simAssets/skybox/milkyway/milkyway_px.jpg","../../simAssets/skybox/milkyway/milkyway_py.jpg":"../../simAssets/skybox/milkyway/milkyway_py.jpg","../../simAssets/skybox/milkyway/milkyway_pz.jpg":"../../simAssets/skybox/milkyway/milkyway_pz.jpg","../../simAssets/skybox/milkyway/milkyway_nx.jpg":"../../simAssets/skybox/milkyway/milkyway_nx.jpg","../../simAssets/skybox/milkyway/milkyway_ny.jpg":"../../simAssets/skybox/milkyway/milkyway_ny.jpg","../../simAssets/skybox/milkyway/milkyway_nz.jpg":"../../simAssets/skybox/milkyway/milkyway_nz.jpg","../../simAssets/earthTextures/2k-earth-daymap.jpg":"../../simAssets/earthTextures/2k-earth-daymap.jpg"}],"../../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"babylonjs":"../../../node_modules/babylonjs/babylon.js","./planet-movements":"planet-movements.js","../../simAssets/skybox/milkyway/milkyway_px.jpg":"../../simAssets/skybox/milkyway/milkyway_px.jpg","../../simAssets/skybox/milkyway/milkyway_py.jpg":"../../simAssets/skybox/milkyway/milkyway_py.jpg","../../simAssets/skybox/milkyway/milkyway_pz.jpg":"../../simAssets/skybox/milkyway/milkyway_pz.jpg","../../simAssets/skybox/milkyway/milkyway_nx.jpg":"../../simAssets/skybox/milkyway/milkyway_nx.jpg","../../simAssets/skybox/milkyway/milkyway_ny.jpg":"../../simAssets/skybox/milkyway/milkyway_ny.jpg","../../simAssets/skybox/milkyway/milkyway_nz.jpg":"../../simAssets/skybox/milkyway/milkyway_nz.jpg","../../simAssets/earthTextures/2k-earth-daymap.jpg":"../../simAssets/earthTextures/2k-earth-daymap.jpg","../../simAssets/earthTextures/2k-earth-normal.jpg":"../../simAssets/earthTextures/2k-earth-normal.jpg"}],"../../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -419,7 +506,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61465" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57256" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
