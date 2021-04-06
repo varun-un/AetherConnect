@@ -1,4 +1,5 @@
 import * as BABYLON from 'babylonjs';
+import * as BGUI from 'babylonjs-gui';
 import {rotatePlanet, animOrbit, orbitPath} from './planet-movements';
 
 //when browser is loaded, create the scene
@@ -125,16 +126,49 @@ var createScene = function () {
     var earthOrbitAnimatable = earthOrbit[0];
     var earthTrack = earthOrbit[1];
 
-    console.log(scene.meshes);
+    var advancedTexture = BGUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+    advancedTexture.layer.layerMask = 2;
 
-    var e = 0.01671;
-    setInterval(function(){
-        e += .005;
-        var path = orbitPath(e, 365, 10);
-        earthTrack = BABYLON.Mesh.CreateLines(null, path, null, null, earthTrack);;
-        earth.ellipse = path;
-        console.log(path);
-    }, 2000);
+    var panel = new BGUI.StackPanel();
+    panel.width = "220px";
+    panel.fontSize = "14px";
+    panel.horizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+    panel.verticalAlignment = BGUI.Control.VERTICAL_ALIGNMENT_CENTER;
+    advancedTexture.addControl(panel);
+
+    var header = new BGUI.TextBlock();
+    header.text = "Speed: 1 unit";
+    header.height = "40px";
+    header.color = "white";
+    header.textHorizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    header.marginTop = "10px";
+    panel.addControl(header); 
+
+    var slider = new BGUI.Slider();
+    slider.horizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    slider.minimum = 1;
+    slider.maximum = 730;
+    slider.color = "green";
+    slider.value = 1;
+    slider.height = "20px";
+    slider.width = "200px";
+    slider.onValueChangedObservable.add(function(value) {
+        header.text = "Speed: " + value + " units";
+        earthOrbitAnimatable.speedRatio = value;
+    });
+    panel.addControl(slider);
+
+    earthOrbitAnimatable.speedRatio = slider.value;
+
+    // change eccentricity
+    // var e = 0.01671;
+    // setInterval(function(){
+    //     e += .005;
+    //     var path = orbitPath(e, 365, 10);
+    //     earthTrack = BABYLON.Mesh.CreateLines(null, path, null, null, earthTrack);
+    //     earth.ellipse = path;
+    //     console.log(path);
+    // }, 2000);
 
     function showWorldAxis(size) {
         var makeTextPlane = function(text, color, size) {
