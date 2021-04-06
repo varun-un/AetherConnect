@@ -1,5 +1,5 @@
 import * as BABYLON from 'babylonjs';
-import {rotatePlanet} from './planet-movements';
+import {rotatePlanet, animOrbit} from './planet-movements';
 
 //when browser is loaded, create the scene
 window.addEventListener('DOMContentLoaded', function () {
@@ -72,27 +72,23 @@ window.addEventListener('DOMContentLoaded', function () {
             set.systems[2].maxScaleX = 2.75;
             set.systems[2].maxScaleY = 2.75;
 
-            console.log(set)
-
             set.start();
         }).catch((issue) => console.error (issue));
         var sun = BABYLON.Mesh.CreateSphere("pseudoSun", 32, 4.1, scene);
 
         //create Earth
         var earth = BABYLON.Mesh.CreateSphere("earth", 32, .5, scene);
-        earth.position.z = 5;
+        earth.position.z = 10;
         earth.renderingGroupId = 3;
         scene.planets.push(earth);
 
         //create earth's texture
         var earthMat = new BABYLON.StandardMaterial("earth-material", scene);
         earthMat.diffuseTexture = new BABYLON.Texture(require("../../simAssets/earthTextures/2k-earth-daymap.jpg"), scene);
-        // earthMat.bumpTexture = new BABYLON.Texture(require("../../simAssets/earthTextures/2k-earth-normal.jpg"), scene);
-        // earthMat.bumpTexture.level = 8;
+        earthMat.bumpTexture = new BABYLON.Texture(require("../../simAssets/earthTextures/2k-earth-normal.jpg"), scene);
+        earthMat.bumpTexture.level = 8;
         earthMat.specularColor = new BABYLON.Color3(0, 0, 0);
         earth.material = earthMat;
-
-        var earthRotAnimatable = rotatePlanet(earth, 22.5, 1, scene, true);
 
         var sunlight = new BABYLON.PointLight("sunlight", new BABYLON.Vector3(0,0,0), scene);
         sunlight.intensity = 1.5;
@@ -105,7 +101,8 @@ window.addEventListener('DOMContentLoaded', function () {
         upLight.intensity = 0.2;
         upLight.includedOnlyMeshes.push(earth);
 
-        //set common settings for all meshes in the scene
+
+        //set settings for focusing and camera action w/ meshes in scene
         for (var i = 1; i < scene.meshes.length; i++){
             scene.meshes[i].checkCollisions = true;
 
@@ -119,6 +116,13 @@ window.addEventListener('DOMContentLoaded', function () {
                 new BABYLON.PredicateCondition(scene.meshes[i].actionManager, () => pressedKeys["70"])));
         }
 
+
+        //create animations for planet rotations
+        var earthRotAnimatable = rotatePlanet(earth, 22.5, 1, scene, true);
+
+
+        //create animations for planet orbits
+        var earthOrbitAnimatable = animOrbit(earth, 0.01671, 365, 10, scene);
 
 
         function showWorldAxis(size) {
@@ -188,8 +192,6 @@ window.addEventListener('DOMContentLoaded', function () {
         }
         localAxes(4, earth);
 
-
-
         //loading screen
         engine.displayLoadingUI();
         scene.executeWhenReady(function() {
@@ -202,12 +204,14 @@ window.addEventListener('DOMContentLoaded', function () {
     var scene = createScene();
     engine.runRenderLoop(function () {    
 
-        //planet rotations
+        //planet rotations and movements
         for (var i = 0; i < scene.planets.length; i++){
             scene.planets[i].rotate(BABYLON.Axis.Y, scene.planets[i].rotYLocal - scene.planets[i].prevRotYLocal, BABYLON.Space.LOCAL);
-            scene.planets[i].prevRotYLocal = scene.planets[i].rotYLocal;    
-        }
+            scene.planets[i].prevRotYLocal = scene.planets[i].rotYLocal;  
 
+            scene.planets[i].setAbsolutePosition(scene.planets[i].ellipse[Math.floor(scene.planets[i].orbitSegment)]);
+        }
+        
         scene.render();
     });
 
