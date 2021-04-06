@@ -1,5 +1,5 @@
 import * as BABYLON from 'babylonjs';
-import {rotatePlanet, animOrbit} from './planet-movements';
+import {rotatePlanet, animOrbit, orbitPath} from './planet-movements';
 
 //when browser is loaded, create the scene
 var canvas = document.getElementById('canvas');
@@ -121,9 +121,20 @@ var createScene = function () {
 
 
     //create animations for planet orbits
-    var earthOrbitAnimatable = animOrbit(earth, 0.01671, 365, 10, scene);
+    var earthOrbit = animOrbit(earth, 0.01671, 365, 10, scene);
+    var earthOrbitAnimatable = earthOrbit[0];
+    var earthTrack = earthOrbit[1];
 
     console.log(scene.meshes);
+
+    var e = 0.01671;
+    setInterval(function(){
+        e += .005;
+        var path = orbitPath(e, 365, 10);
+        earthTrack = BABYLON.Mesh.CreateLines(null, path, null, null, earthTrack);;
+        earth.ellipse = path;
+        console.log(path);
+    }, 2000);
 
     function showWorldAxis(size) {
         var makeTextPlane = function(text, color, size) {

@@ -98,7 +98,7 @@ const orbitPath = function(eccentricity, period, a){
  * @param {*} period - The length of time for one full revolution of orbit, in Earth days
  * @param {*} a - The length of the semi-major axis of the orbit's ellipse (in scene units)
  * @param {*} scene - The scene on which this animation occurs
- * @returns An animatable representing the planet's orbit
+ * @returns An animatable representing the planet's orbit and the mesh for the orbit
  */
  const animOrbit = function(planet, eccentricity, period, a, scene) {
 
@@ -133,7 +133,7 @@ const orbitPath = function(eccentricity, period, a){
     planetOrbitAnim.setKeys(planetOrbitKeys);
     var animatable = scene.beginDirectAnimation(planet, [planetOrbitAnim], 0, period * 24 * 10, true, 1);
 
-    return animatable;            
+    return [animatable, track];            
 };
 
 export {rotatePlanet, animOrbit, orbitPath};

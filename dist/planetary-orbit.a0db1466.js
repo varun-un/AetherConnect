@@ -246,7 +246,7 @@ var orbitPath = function orbitPath(eccentricity, period, a) {
  * @param {*} period - The length of time for one full revolution of orbit, in Earth days
  * @param {*} a - The length of the semi-major axis of the orbit's ellipse (in scene units)
  * @param {*} scene - The scene on which this animation occurs
- * @returns An animatable representing the planet's orbit
+ * @returns An animatable representing the planet's orbit and the mesh for the orbit
  */
 
 
@@ -282,7 +282,7 @@ var animOrbit = function animOrbit(planet, eccentricity, period, a, scene) {
   });
   planetOrbitAnim.setKeys(planetOrbitKeys);
   var animatable = scene.beginDirectAnimation(planet, [planetOrbitAnim], 0, period * 24 * 10, true, 1);
-  return animatable;
+  return [animatable, track];
 };
 
 exports.animOrbit = animOrbit;
@@ -420,8 +420,19 @@ var createScene = function createScene() {
 
   var earthRotAnimatable = (0, _planetMovements.rotatePlanet)(earth, 22.5, 1, scene, true); //create animations for planet orbits
 
-  var earthOrbitAnimatable = (0, _planetMovements.animOrbit)(earth, 0.01671, 365, 10, scene);
+  var earthOrbit = (0, _planetMovements.animOrbit)(earth, 0.01671, 365, 10, scene);
+  var earthOrbitAnimatable = earthOrbit[0];
+  var earthTrack = earthOrbit[1];
   console.log(scene.meshes);
+  var e = 0.01671;
+  setInterval(function () {
+    e += .005;
+    var path = (0, _planetMovements.orbitPath)(e, 365, 10);
+    earthTrack = BABYLON.Mesh.CreateLines(null, path, null, null, earthTrack);
+    ;
+    earth.ellipse = path;
+    console.log(path);
+  }, 2000);
 
   function showWorldAxis(size) {
     var makeTextPlane = function makeTextPlane(text, color, size) {
