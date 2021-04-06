@@ -242,7 +242,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
     var camera = new BABYLON.ArcRotateCamera("arcCamera", 0, 0, 7, BABYLON.Vector3.Zero(), scene);
     camera.attachControl(canvas, true);
-    camera.collisionRadius = new BABYLON.Vector3(1.1, 1.1, 1.1);
+    camera.collisionRadius = new BABYLON.Vector3(1, 1, 1);
     camera.checkCollisions = true;
     camera.upperRadiusLimit = 600;
     camera.pinchPrecision = 85.0;
@@ -271,12 +271,21 @@ window.addEventListener('DOMContentLoaded', function () {
     var sunParticles = new BABYLON.ParticleHelper.CreateAsync("sun", scene).then(function (set) {
       set.systems[0].renderingGroupId = 3;
       set.systems[1].renderingGroupId = 1;
-      set.systems[2].renderingGroupId = 3;
+      set.systems[2].renderingGroupId = 3; //scale up sun
+
+      set._emitterNode.scaling = new BABYLON.Vector3(2, 2, 2);
+      set.systems[0].maxScaleX = 2.4;
+      set.systems[0].maxScaleY = 2.4;
+      set.systems[1].maxScaleX = 1.75;
+      set.systems[1].maxScaleY = 1.75;
+      set.systems[2].maxScaleX = 2.75;
+      set.systems[2].maxScaleY = 2.75;
+      console.log(set);
       set.start();
     }).catch(function (issue) {
       return console.error(issue);
     });
-    var sun = BABYLON.Mesh.CreateSphere("pseudoSun", 32, 2.1, scene); //create Earth
+    var sun = BABYLON.Mesh.CreateSphere("pseudoSun", 32, 4.1, scene); //create Earth
 
     var earth = BABYLON.Mesh.CreateSphere("earth", 32, .5, scene);
     earth.position.z = 5;
