@@ -50,13 +50,6 @@ var createScene = function () {
     scene.imageProcessingConfiguration.toneMappingType = BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
     scene.imageProcessingConfiguration.exposure = 3;
 
-    //bloom (optional) (~setting tbd)
-    pipeline.bloomEnabled = true;
-    pipeline.bloomThreshold = 1;
-    pipeline.bloomWeight = 0.4;
-    pipeline.bloomKernel = 64;
-    pipeline.bloomScale = 0.5;
-
     //create particle system from provided assets: https://github.com/BabylonJS/Assets/blob/master/particles/systems/sun.json
     var sunParticles = new BABYLON.ParticleHelper.CreateAsync("sun", scene).then(function(set) {
         set.systems[0].renderingGroupId = 3;
@@ -130,35 +123,75 @@ var createScene = function () {
     advancedTexture.layer.layerMask = 2;
 
     var panel = new BGUI.StackPanel();
-    panel.width = "220px";
-    panel.fontSize = "14px";
-    panel.horizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
-    panel.verticalAlignment = BGUI.Control.VERTICAL_ALIGNMENT_CENTER;
+    panel.width = (window.innerWidth / 3)+ "px";
+    panel.horizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    panel.verticalAlignment = BGUI.Control.VERTICAL_ALIGNMENT_TOP;
     advancedTexture.addControl(panel);
 
+    //converts the slider's value into a readable string
+    const speedString = function(sliderValue) {
+
+        if (sliderValue === 0){
+            return "Paused"
+        }
+        var conversion = "";
+        if (sliderValue === 730){
+            conversion = "1 Earth year";
+        }
+        else if (sliderValue > 60){
+            conversion = Math.round(sliderValue / 2 / 30 * 100) / 100 + " Earth months";
+        }
+        else if (sliderValue === 60){
+            conversion = "1 Earth month";
+        }
+        else if (sliderValue > 14){
+            conversion = Math.round(sliderValue / 2 / 7 * 10) / 10 + " Earth weeks";
+        }
+        else if (sliderValue === 14){
+            conversion = "1 Earth week";
+        }
+        else if (sliderValue === 2){
+            conversion = "1 Earth day";
+        }
+        else {
+            conversion = Math.round(sliderValue / 2 * 10) / 10 + " Earth days";
+        }
+        return "Speed: " + Math.round(sliderValue * 43200) + "x   |   1 second = " + conversion;
+    }
+
     var header = new BGUI.TextBlock();
-    header.text = "Speed: 1 unit";
+    header.text = speedString(1);
     header.height = "40px";
     header.color = "white";
-    header.textHorizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    header.fontSize = 16;
+    header.fontFamily = 'arial';
+    header.textHorizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
     header.marginTop = "10px";
     panel.addControl(header); 
-
+    
     var slider = new BGUI.Slider();
-    slider.horizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-    slider.minimum = 1;
+    slider.horizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+    slider.minimum = 0;
     slider.maximum = 730;
-    slider.color = "green";
+    slider.color = "orange";
+    slider.background = "#050505";
     slider.value = 1;
     slider.height = "20px";
-    slider.width = "200px";
+    slider.width = (window.innerWidth / 3 - 50)+ "px";
     slider.onValueChangedObservable.add(function(value) {
-        header.text = "Speed: " + value + " units";
+        header.text = speedString(value);
         earthOrbitAnimatable.speedRatio = value;
+
+        //cap the rotation speed at 20pi radians/sec
+        if (value <= 40) {
+            earthRotAnimatable.speedRatio = value;
+        }
+        else {
+            earthRotAnimatable.speedRatio = 40;
+        }
     });
     panel.addControl(slider);
 
-    earthOrbitAnimatable.speedRatio = slider.value;
 
     // change eccentricity
     // var e = 0.01671;
