@@ -12,7 +12,8 @@ _Liscensed under Apache License 2.0_
 To run the full non-minified, development program, dependencies will have to be installed locally. These dependencies can be installed with [npm](https://www.npmjs.com/). To install, run the following:
 #### BabylonJS
 ```
-npm install --save babylonjs
+npm install --save babylonjs babylonjs-gui
+
 ```
 #### Parcel
 ```
