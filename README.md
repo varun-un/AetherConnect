@@ -13,7 +13,6 @@ To run the full non-minified, development program, dependencies will have to be 
 #### BabylonJS
 ```
 npm install --save babylonjs babylonjs-gui
-
 ```
 #### Parcel
 ```
