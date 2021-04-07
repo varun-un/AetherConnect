@@ -121,6 +121,7 @@ var createScene = function () {
 
     var advancedTexture = BGUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
     advancedTexture.layer.layerMask = 2;
+    advancedTexture.renderScale = 1;
 
     var panel = new BGUI.StackPanel();
     panel.width = (window.innerWidth / 3)+ "px";
@@ -162,9 +163,10 @@ var createScene = function () {
     var header = new BGUI.TextBlock();
     header.text = speedString(1);
     header.height = "40px";
+    header.widthInPixels = panel.widthInPixels;
     header.color = "white";
     header.fontSize = 16;
-    header.fontFamily = 'arial';
+    header.fontFamily = 'roboto';
     header.textHorizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
     header.marginTop = "10px";
     panel.addControl(header); 
