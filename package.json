@@ -12,7 +12,8 @@
   "author": "Varun Unnithan",
   "license": "ISC",
   "dependencies": {
-    "babylonjs": "^4.2.0"
+    "babylonjs": "^4.2.0",
+    "babylonjs-gui": "^4.2.0"
   },
   "devDependencies": {
     "cssnano": "^4.1.10",

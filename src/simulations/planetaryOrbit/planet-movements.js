@@ -43,21 +43,20 @@ const rotatePlanet = function (planet, tilt, dayLength, scene, loops = true) {
 };
 
 /**
- * Models and animates the orbit of a planet
- * @param {*} planet - The planet mesh for which to animate the orbit
- * @param {*} eccentricity - The eccentricity of the planet's orbit, as a value between 0 and 1
- * @param {*} period - The length of time for one full revolution of orbit, in Earth days
- * @param {*} a - The length of the semi-major axis of the orbit's ellipse (in scene units)
- * @param {*} scene - The scene on which this animation occurs
- * @returns An animatable representing the planet's orbit
+ * Uses Kepler's Equation to solve for points along a planet's orbit, each spaced 6 minutes apart
+ * @param {*} eccentricity - The eccentricity of the orbit to calculate (c/a)
+ * @param {*} period - The period of the planet's orbit, in Earth days
+ * @param {*} a - The The length of the semi-major axis of the orbit's ellipse (in scene units)
+ * @returns {Vector3[]} An array of vectors which define the points of the orbit's ellipse
  */
-const animOrbit = function(planet, eccentricity, period, a, scene) {
+const orbitPath = function(eccentricity, period, a){
 
-    //solves Kepler's equation for a given time t since the perihelion passing using Newton's methods
-    const newtonianMethod = function(eccentricity, time, period){
+    //solves Kepler's equation using Newton's methods, for a given time t after the perihelion passing (in minutes)
+    //returns the eccentric anomaly of that point in the orbit
+    const newtonianKeplerEq = function(eccentricity, time, period){
         var diff = 100.0;
         var epsilon = .0000001;                  //target difference
-
+    
         var E_new;
         var Mean_anomaly = (Math.PI * 2 / (period * 24 * 60)) * time;
         var direction = 1;
@@ -67,7 +66,7 @@ const animOrbit = function(planet, eccentricity, period, a, scene) {
           direction = -1;
         }
         var E_old = Mean_anomaly + eccentricity / 2.0;      //starting Eccentric Anomaly
-
+    
         //loop until precision good
         while (diff > epsilon) {
             E_new = E_old - (E_old - eccentricity * (Math.sin(E_old)) - Mean_anomaly) / (1 - eccentricity * (Math.cos(E_old)));
@@ -80,7 +79,7 @@ const animOrbit = function(planet, eccentricity, period, a, scene) {
     //define path using steps of 6 minutes
     var path = [];
     for (var i = 0; i < (period * 24 * 10); i++){
-        var E = newtonianMethod(eccentricity, 6 * i, period);       //time in mins and period in days
+        var E = newtonianKeplerEq(eccentricity, 6 * i, period);       //gets the E for the time interval
 
         //get polar coordinates
         var r = a * (1 - (eccentricity * Math.cos(E)));
@@ -89,9 +88,26 @@ const animOrbit = function(planet, eccentricity, period, a, scene) {
         //push cartesian points into array
         path.push(new BABYLON.Vector3(-1 * r * Math.sin(theta), 0, r * Math.cos(theta)));
     }
+    return path;
+}
+
+/**
+ * Models and animates the orbit of a planet
+ * @param {*} planet - The planet mesh for which to animate the orbit
+ * @param {*} eccentricity - The eccentricity of the planet's orbit, as a value between 0 and 1
+ * @param {*} period - The length of time for one full revolution of orbit, in Earth days
+ * @param {*} a - The length of the semi-major axis of the orbit's ellipse (in scene units)
+ * @param {*} scene - The scene on which this animation occurs
+ * @returns An animatable representing the planet's orbit and the mesh for the orbit
+ */
+ const animOrbit = function(planet, eccentricity, period, a, scene) {
+
+    //define path using steps of 6 minutes
+    var path = orbitPath(eccentricity, period, a);
     var track = BABYLON.MeshBuilder.CreateLines(planet.name + 'Track', {points: path, updatable: true}, scene);
 	track.color = new BABYLON.Color3(.75,.75,.75);
     track.renderingGroupId = 3;
+    planet["track"] = track;
 
     var frameRate = 60;
     planet["orbitSegment"] = 0;
@@ -117,8 +133,7 @@ const animOrbit = function(planet, eccentricity, period, a, scene) {
     planetOrbitAnim.setKeys(planetOrbitKeys);
     var animatable = scene.beginDirectAnimation(planet, [planetOrbitAnim], 0, period * 24 * 10, true, 1);
 
-    return animatable;            
+    return [animatable, track];            
 };
 
-
-export {rotatePlanet, animOrbit};
+export {rotatePlanet, animOrbit, orbitPath};
