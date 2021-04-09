@@ -193,15 +193,15 @@ var rotatePlanet = function rotatePlanet(planet, tilt, dayLength, scene) {
     value: 0
   });
   planetRotKeys.push({
-    frame: 2 * frameRate,
-    value: Math.PI / dayLength
+    frame: 2 * frameRate * dayLength,
+    value: Math.PI
   });
   planetRotKeys.push({
-    frame: 4 * frameRate,
-    value: 2 * Math.PI / dayLength
+    frame: 4 * frameRate * dayLength,
+    value: 2 * Math.PI
   });
   planetRotAnim.setKeys(planetRotKeys);
-  var animatable = scene.beginDirectAnimation(planet, [planetRotAnim], 0, 4 * frameRate, loops, 1);
+  var animatable = scene.beginDirectAnimation(planet, [planetRotAnim], 0, 4 * frameRate * dayLength, loops, 1);
   return animatable;
 };
 /**
@@ -265,7 +265,7 @@ var orbitPath = function orbitPath(eccentricity, period, a) {
  * @param {*} period - The length of time for one full revolution of orbit, in Earth days
  * @param {*} a - The length of the semi-major axis of the orbit's ellipse (in scene units)
  * @param {*} scene - The scene on which this animation occurs
- * @returns An animatable representing the planet's orbit and the mesh for the orbit
+ * @returns An animatable representing the planet's orbit and the mesh for the orbit in an array
  */
 
 
@@ -562,11 +562,36 @@ var createScene = function createScene() {
 
     if (!current) {
       return;
+    } //check which quadrant the mouse is in and set the appropriate section of ellipse to check for it
+
+
+    var startIndex, endIndex;
+
+    if (current.x <= 0 && current.z >= 0) {
+      startIndex = 0;
+      endIndex = currentMesh.ellipse.length / 4;
+    } else if (current.x <= 0 && current.z <= 0) {
+      startIndex = currentMesh.ellipse.length / 4;
+      endIndex = currentMesh.ellipse.length / 2;
+    } else if (current.x > 0 && current.z <= 0) {
+      startIndex = currentMesh.ellipse.length / 2;
+      endIndex = 3 * currentMesh.ellipse.length / 4;
+    } else {
+      startIndex = 3 * currentMesh.ellipse.length / 4;
+      endIndex = currentMesh.ellipse.length;
     }
 
-    console.log(current);
-    var diff = current.subtract(startingPoint);
-    currentMesh.position.addInPlace(diff);
+    var closestFrame = startIndex;
+    var closestDist = current.subtract(currentMesh.ellipse[closestFrame]).length();
+
+    for (var i = startIndex + 1; i < endIndex; i++) {
+      if (current.subtract(currentMesh.ellipse[i]).length() <= closestDist) {
+        closestDist = current.subtract(currentMesh.ellipse[i]).length();
+        closestFrame = i;
+      }
+    }
+
+    earthOrbitAnimatable.goToFrame(closestFrame);
     startingPoint = current;
   };
 
@@ -656,7 +681,8 @@ engine.runRenderLoop(function () {
   //planet rotations and movements
   for (var i = 0; i < scene.planets.length; i++) {
     scene.planets[i].rotate(BABYLON.Axis.Y, scene.planets[i].rotYLocal - scene.planets[i].prevRotYLocal, BABYLON.Space.LOCAL);
-    scene.planets[i].prevRotYLocal = scene.planets[i].rotYLocal; //scene.planets[i].setAbsolutePosition(scene.planets[i].ellipse[Math.floor(scene.planets[i].orbitSegment)]);
+    scene.planets[i].prevRotYLocal = scene.planets[i].rotYLocal;
+    scene.planets[i].setAbsolutePosition(scene.planets[i].ellipse[Math.floor(scene.planets[i].orbitSegment)]);
   }
 
   scene.render();

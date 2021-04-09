@@ -28,16 +28,16 @@ const rotatePlanet = function (planet, tilt, dayLength, scene, loops = true) {
         value: 0
     });
     planetRotKeys.push({
-        frame: 2 * frameRate,
-        value: Math.PI / (dayLength)
+        frame: 2 * frameRate * dayLength,
+        value: Math.PI 
     });
     planetRotKeys.push({
-        frame: 4 * frameRate,
-        value: 2 * Math.PI / dayLength
+        frame: 4 * frameRate * dayLength,
+        value: 2 * Math.PI 
     });
 
     planetRotAnim.setKeys(planetRotKeys);
-    var animatable = scene.beginDirectAnimation(planet, [planetRotAnim], 0, 4 * frameRate, loops, 1);
+    var animatable = scene.beginDirectAnimation(planet, [planetRotAnim], 0, 4 * frameRate * dayLength, loops, 1);
 
     return animatable;
 };
@@ -98,7 +98,7 @@ const orbitPath = function(eccentricity, period, a){
  * @param {*} period - The length of time for one full revolution of orbit, in Earth days
  * @param {*} a - The length of the semi-major axis of the orbit's ellipse (in scene units)
  * @param {*} scene - The scene on which this animation occurs
- * @returns An animatable representing the planet's orbit and the mesh for the orbit
+ * @returns An animatable representing the planet's orbit and the mesh for the orbit in an array
  */
  const animOrbit = function(planet, eccentricity, period, a, scene) {
 

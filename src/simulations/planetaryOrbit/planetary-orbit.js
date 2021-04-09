@@ -249,13 +249,36 @@ var createScene = function () {
             return;
         }
 
-        console.log(current);
+        //check which quadrant the mouse is in and set the appropriate section of ellipse to check for it
+        var startIndex, endIndex;
+        if (current.x <=0 && current.z >= 0){
+            startIndex = 0;
+            endIndex = currentMesh.ellipse.length / 4;
+        }
+        else if (current.x <=0 && current.z <= 0){
+            startIndex = currentMesh.ellipse.length / 4;
+            endIndex = currentMesh.ellipse.length / 2;
+        }
+        else if (current.x > 0 && current.z <= 0){
+            startIndex = currentMesh.ellipse.length / 2;
+            endIndex = 3 * currentMesh.ellipse.length / 4;
+        }
+        else {
+            startIndex = 3 * currentMesh.ellipse.length / 4;
+            endIndex = currentMesh.ellipse.length;
+        }
 
-        var diff = current.subtract(startingPoint);
-        currentMesh.position.addInPlace(diff);
+        var closestFrame = startIndex;
+        var closestDist = current.subtract(currentMesh.ellipse[closestFrame]).length();
+        for (var i = startIndex + 1; i < endIndex; i++){
+            if (current.subtract(currentMesh.ellipse[i]).length() <= closestDist){
+                closestDist = current.subtract(currentMesh.ellipse[i]).length();
+                closestFrame = i;
+            }
+        }
+        earthOrbitAnimatable.goToFrame(closestFrame);
 
         startingPoint = current;
-
     }
 
     scene.onPointerObservable.add((pointerInfo) => {      		
@@ -370,7 +393,7 @@ engine.runRenderLoop(function () {
         scene.planets[i].rotate(BABYLON.Axis.Y, scene.planets[i].rotYLocal - scene.planets[i].prevRotYLocal, BABYLON.Space.LOCAL);
         scene.planets[i].prevRotYLocal = scene.planets[i].rotYLocal;  
 
-        //scene.planets[i].setAbsolutePosition(scene.planets[i].ellipse[Math.floor(scene.planets[i].orbitSegment)]);
+        scene.planets[i].setAbsolutePosition(scene.planets[i].ellipse[Math.floor(scene.planets[i].orbitSegment)]);
     }
     
     scene.render();
