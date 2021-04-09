@@ -280,7 +280,6 @@ var animOrbit = function animOrbit(planet, eccentricity, period, a, scene) {
   }, scene);
   track.color = new BABYLON.Color3(.75, .75, .75);
   track.renderingGroupId = 3;
-  planet["track"] = track;
   var frameRate = 60;
   planet["orbitSegment"] = 0;
   planet["ellipse"] = path; //create planet's orbit animation             
@@ -505,30 +504,90 @@ var createScene = function createScene() {
       earthRotAnimatable.speedRatio = 40;
     }
   });
-  panel.addControl(slider);
-  var mouseDraggable = false; //dragging
+  panel.addControl(slider); // Invisible Wall (set it at a good distance)
 
-  scene.onPointerDown = function castRay() {
-    var ray = scene.createPickingRay(scene.pointerX, scene.pointerY, BABYLON.Matrix.Identity(), camera);
-    var hit = scene.pickWithRay(ray);
+  var orbitPlane = BABYLON.MeshBuilder.CreateGround("orbitPlane", {
+    width: 30,
+    height: 30
+  }, scene);
+  orbitPlane.isPickable = true;
+  orbitPlane.isBlocker = false; // We need this to let the system select invisible meshes
 
-    if (hit.pickedMesh && scene.planets.includes(hit.pickedMesh)) {
-      console.log("picked");
-      mouseDraggable = hit;
+  scene.pointerDownPredicate = function (mesh) {
+    return mesh.isPickable;
+  }; //dragging
+
+
+  var startingPoint;
+  var currentMesh;
+
+  var getGroundPosition = function getGroundPosition() {
+    var pickinfo = scene.pick(scene.pointerX, scene.pointerY, function (mesh) {
+      return mesh == orbitPlane;
+    });
+
+    if (pickinfo.hit) {
+      return pickinfo.pickedPoint;
+    }
+
+    return null;
+  };
+
+  var pointerDown = function pointerDown(mesh) {
+    currentMesh = mesh;
+    startingPoint = getGroundPosition();
+
+    if (startingPoint) {
+      //we need to disconnect camera from canvas
+      setTimeout(function () {
+        camera.detachControl(canvas);
+      }, 0);
     }
   };
 
-  scene.onPointerMove = function () {
-    if (mouseDraggable != false) {
-      console.log("hee");
-      camera.detachControl(canvas);
+  var pointerUp = function pointerUp() {
+    if (startingPoint) {
+      camera.attachControl(canvas, true);
+      startingPoint = null;
+      return;
     }
   };
 
-  scene.onPointerUp = function () {
-    mouseDraggable = false;
-    camera.attachControl(canvas, true);
-  }; // change eccentricity
+  var pointerMove = function pointerMove() {
+    if (!startingPoint) {
+      return;
+    }
+
+    var current = getGroundPosition();
+
+    if (!current) {
+      return;
+    }
+
+    console.log(current);
+    var diff = current.subtract(startingPoint);
+    currentMesh.position.addInPlace(diff);
+    startingPoint = current;
+  };
+
+  scene.onPointerObservable.add(function (pointerInfo) {
+    switch (pointerInfo.type) {
+      case BABYLON.PointerEventTypes.POINTERDOWN:
+        if (pointerInfo.pickInfo.hit && scene.planets.includes(pointerInfo.pickInfo.pickedMesh)) {
+          pointerDown(pointerInfo.pickInfo.pickedMesh);
+        }
+
+        break;
+
+      case BABYLON.PointerEventTypes.POINTERUP:
+        pointerUp();
+        break;
+
+      case BABYLON.PointerEventTypes.POINTERMOVE:
+        pointerMove();
+        break;
+    }
+  }); // change eccentricity
   // var e = 0.01671;
   // setInterval(function(){
   //     e += .005;
@@ -537,7 +596,6 @@ var createScene = function createScene() {
   //     earth.ellipse = path;
   //     console.log(path);
   // }, 2000);
-
 
   function showWorldAxis(size) {
     var makeTextPlane = function makeTextPlane(text, color, size) {
@@ -566,7 +624,8 @@ var createScene = function createScene() {
     zChar.position = new BABYLON.Vector3(0, 0.05 * size, 0.9 * size);
   }
 
-  ; //showWorldAxis(15);
+  ;
+  showWorldAxis(15);
 
   function localAxes(size, mesh) {
     var pilot_local_axisX = BABYLON.Mesh.CreateLines("pilot_local_axisX", [new BABYLON.Vector3.Zero(), new BABYLON.Vector3(size, 0, 0), new BABYLON.Vector3(size * 0.95, 0.05 * size, 0), new BABYLON.Vector3(size, 0, 0), new BABYLON.Vector3(size * 0.95, -0.05 * size, 0)], scene);

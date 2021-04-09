@@ -107,7 +107,6 @@ const orbitPath = function(eccentricity, period, a){
     var track = BABYLON.MeshBuilder.CreateLines(planet.name + 'Track', {points: path, updatable: true}, scene);
 	track.color = new BABYLON.Color3(.75,.75,.75);
     track.renderingGroupId = 3;
-    planet["track"] = track;
 
     var frameRate = 60;
     planet["orbitSegment"] = 0;
