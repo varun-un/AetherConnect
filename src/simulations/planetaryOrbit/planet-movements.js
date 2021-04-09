@@ -5,11 +5,9 @@ import * as BABYLON from 'babylonjs';
  * @param {Mesh} planet - The Mesh for which to perform the rotation on
  * @param {number} tilt - The angle of tilt of the planet in degrees
  * @param {number} dayLength - The length of one rotation period of the planet (in Earth days)
- * @param {Scene} scene - The scene for which this animation occurs
- * @param {boolean} loops - Whether or not this animation will loop forever
- * @returns An animatable representing the rotation of the passed planet, at the rate of 1 second = 12 hrs
+ * @param {BABYLON.AnimationGroup} group - The animation group to add this animation to
  */
-const rotatePlanet = function (planet, tilt, dayLength, scene, loops = true) {
+const rotatePlanet = function (planet, tilt, dayLength, group) {
 
     //tilt on axis
     planet.rotation = new BABYLON.Vector3(tilt * Math.PI / 180, 0, Math.PI);
@@ -37,17 +35,15 @@ const rotatePlanet = function (planet, tilt, dayLength, scene, loops = true) {
     });
 
     planetRotAnim.setKeys(planetRotKeys);
-    var animatable = scene.beginDirectAnimation(planet, [planetRotAnim], 0, 4 * frameRate * dayLength, loops, 1);
-
-    return animatable;
+    group.addTargetedAnimation(planetRotAnim, planet);
 };
 
 /**
  * Uses Kepler's Equation to solve for points along a planet's orbit, each spaced 6 minutes apart
- * @param {*} eccentricity - The eccentricity of the orbit to calculate (c/a)
- * @param {*} period - The period of the planet's orbit, in Earth days
- * @param {*} a - The The length of the semi-major axis of the orbit's ellipse (in scene units)
- * @returns {Vector3[]} An array of vectors which define the points of the orbit's ellipse
+ * @param {number} eccentricity - The eccentricity of the orbit to calculate (c/a)
+ * @param {number} period - The period of the planet's orbit, in Earth days
+ * @param {number} a - The The length of the semi-major axis of the orbit's ellipse (in scene units)
+ * @returns {BABYLON.Vector3[]} An array of vectors which define the points of the orbit's ellipse
  */
 const orbitPath = function(eccentricity, period, a){
 
@@ -93,14 +89,15 @@ const orbitPath = function(eccentricity, period, a){
 
 /**
  * Models and animates the orbit of a planet
- * @param {*} planet - The planet mesh for which to animate the orbit
- * @param {*} eccentricity - The eccentricity of the planet's orbit, as a value between 0 and 1
- * @param {*} period - The length of time for one full revolution of orbit, in Earth days
- * @param {*} a - The length of the semi-major axis of the orbit's ellipse (in scene units)
- * @param {*} scene - The scene on which this animation occurs
- * @returns An animatable representing the planet's orbit and the mesh for the orbit in an array
+ * @param {BABYLON.Mesh} planet - The planet mesh for which to animate the orbit
+ * @param {Number} eccentricity - The eccentricity of the planet's orbit, as a value between 0 and 1
+ * @param {Number} period - The length of time for one full revolution of orbit, in Earth days
+ * @param {Number} a - The length of the semi-major axis of the orbit's ellipse (in scene units)
+ * @param {BABYLON.AnimationGroup} group - The animation group to add this animation to
+ * @param {BABYLON.Scene} scene - The scene on which this animation occurs
+ * @returns The mesh of the orbit path
  */
- const animOrbit = function(planet, eccentricity, period, a, scene) {
+ const animOrbit = function(planet, eccentricity, period, a, group, scene) {
 
     //define path using steps of 6 minutes
     var path = orbitPath(eccentricity, period, a);
@@ -130,9 +127,9 @@ const orbitPath = function(eccentricity, period, a){
     });
 
     planetOrbitAnim.setKeys(planetOrbitKeys);
-    var animatable = scene.beginDirectAnimation(planet, [planetOrbitAnim], 0, period * 24 * 10, true, 1);
+    group.addTargetedAnimation(planetOrbitAnim, planet);
 
-    return [animatable, track];            
+    return track;            
 };
 
 export {rotatePlanet, animOrbit, orbitPath};

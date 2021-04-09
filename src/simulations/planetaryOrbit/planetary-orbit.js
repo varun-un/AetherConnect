@@ -11,6 +11,7 @@ var createScene = function () {
     scene.collisionsEnabled = true;
     scene["planets"] = [];
 
+    //keep track of all pressed keys
     var pressedKeys = {};
     window.onkeyup = function(e) { pressedKeys[e.keyCode] = false; }
     window.onkeydown = function(e) { pressedKeys[e.keyCode] = true; }
@@ -49,6 +50,8 @@ var createScene = function () {
     scene.imageProcessingConfiguration.toneMappingType = BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
     scene.imageProcessingConfiguration.exposure = 3;
 
+
+    //------------------Meshes & Lights----------------------
     //create particle system from provided assets: https://github.com/BabylonJS/Assets/blob/master/particles/systems/sun.json
     var sunParticles = new BABYLON.ParticleHelper.CreateAsync("sun", scene).then(function(set) {
         set.systems[0].renderingGroupId = 3;
@@ -110,15 +113,23 @@ var createScene = function () {
     }
 
 
+    //--------------------------Planet Animations------------------------
     //create animations for planet rotations
-    var earthRotAnimatable = rotatePlanet(earth, 22.5, 1, scene, true);
+    var rotationAnims = new BABYLON.AnimationGroup("rotationGroup");
+    rotatePlanet(earth, 22.5, 1, rotationAnims);
+    rotationAnims.normalize();
+    rotationAnims.play(true);
 
 
     //create animations for planet orbits
-    var earthOrbit = animOrbit(earth, 0.01671, 365, 10, scene);
-    var earthOrbitAnimatable = earthOrbit[0];
-    var earthTrack = earthOrbit[1];
+    var orbitAnims = new BABYLON.AnimationGroup("orbitGroup");
+    var earthTrack = animOrbit(earth, 0.01671, 365, 10, orbitAnims, scene);
+    orbitAnims.normalize();
+    orbitAnims.play(true);
 
+
+
+    //----------------------------GUI-------------------------------
     //create Babylon GUI for speed controls in top left
     var advancedTexture = BGUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
     advancedTexture.layer.layerMask = 2;
@@ -185,53 +196,50 @@ var createScene = function () {
     slider.width = (window.innerWidth / 3 - 50)+ "px";
     slider.onValueChangedObservable.add(function(value) {
         header.text = speedString(value);
-        earthOrbitAnimatable.speedRatio = value;
+        orbitAnims.speedRatio = value;
 
         //cap the rotation speed at 20pi radians/sec
         if (value <= 40) {
-            earthRotAnimatable.speedRatio = value;
+            rotationAnims.speedRatio = value;
         }
         else {
-            earthRotAnimatable.speedRatio = 40;
+            rotationAnims.speedRatio = 40;
         }
     });
     panel.addControl(slider);
 
 
-    // Invisible Wall (set it at a good distance)
-    var orbitPlane = BABYLON.MeshBuilder.CreateGround("orbitPlane", {width:30, height:30}, scene);
+    //-----------------Dragging Controls---------------
+    //Plane on xz axis for projection of mouse rays when dragging
+    var orbitPlane = BABYLON.MeshBuilder.CreateGround("orbitPlane", {width:500, height:500}, scene);
     orbitPlane.isPickable = true; 
     orbitPlane.isBlocker = false;
-
-
-    // We need this to let the system select invisible meshes
+    orbitPlane.isVisible = false;
     scene.pointerDownPredicate = function(mesh) {
         return mesh.isPickable;
     }
 
-    //dragging
+    //Uses orbitPlane to pick mouse position
     var startingPoint;
     var currentMesh;
-
-    var getGroundPosition = function () {
+    var getPickPosition = function () {
         var pickinfo = scene.pick(scene.pointerX, scene.pointerY, function (mesh) { return mesh == orbitPlane; });
         if (pickinfo.hit) {
             return pickinfo.pickedPoint;
         }
-
         return null;
     }
-
-    var pointerDown = function (mesh) {
+    //enable dragging controls
+    var pointerDragDown = function (mesh) {
         currentMesh = mesh;
-        startingPoint = getGroundPosition();
-        if (startingPoint) {                //we need to disconnect camera from canvas
+        startingPoint = getPickPosition();
+        if (startingPoint) {                
             setTimeout(function () {
                 camera.detachControl(canvas);
             }, 0);
         }
     }
-
+    //disable dragging controls
     var pointerUp = function () {
         if (startingPoint) {
             camera.attachControl(canvas, true);
@@ -239,12 +247,12 @@ var createScene = function () {
             return;
         }
     }
-
+    //when cursor moves
     var pointerMove = function () {
         if (!startingPoint) {
             return;
         }
-        var current = getGroundPosition();
+        var current = getPickPosition();
         if (!current) {
             return;
         }
@@ -268,6 +276,7 @@ var createScene = function () {
             endIndex = currentMesh.ellipse.length;
         }
 
+        //check for closest point to mouse on orbit path
         var closestFrame = startIndex;
         var closestDist = current.subtract(currentMesh.ellipse[closestFrame]).length();
         for (var i = startIndex + 1; i < endIndex; i++){
@@ -276,16 +285,16 @@ var createScene = function () {
                 closestFrame = i;
             }
         }
-        earthOrbitAnimatable.goToFrame(closestFrame);
-
-        startingPoint = current;
+        orbitAnims.goToFrame(closestFrame);
     }
 
+    //call methods when mouse clicked or dragged
     scene.onPointerObservable.add((pointerInfo) => {      		
         switch (pointerInfo.type) {
 			case BABYLON.PointerEventTypes.POINTERDOWN:
-				if(pointerInfo.pickInfo.hit && scene.planets.includes(pointerInfo.pickInfo.pickedMesh)) {
-                    pointerDown(pointerInfo.pickInfo.pickedMesh)
+                //if for a drag on a planet, call the method
+				if(pointerInfo.pickInfo.hit && scene.planets.includes(pointerInfo.pickInfo.pickedMesh) && pressedKeys["68"]) {
+                    pointerDragDown(pointerInfo.pickInfo.pickedMesh)
                 }
 				break;
 			case BABYLON.PointerEventTypes.POINTERUP:
@@ -309,6 +318,8 @@ var createScene = function () {
     //     console.log(path);
     // }, 2000);
 
+
+    //--------------Debugging Axis----------------
     function showWorldAxis(size) {
         var makeTextPlane = function(text, color, size) {
             var dynamicTexture = new BABYLON.DynamicTexture("DynamicTexture", 50, scene, true);

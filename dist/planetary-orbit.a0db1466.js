@@ -174,12 +174,9 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
  * @param {Mesh} planet - The Mesh for which to perform the rotation on
  * @param {number} tilt - The angle of tilt of the planet in degrees
  * @param {number} dayLength - The length of one rotation period of the planet (in Earth days)
- * @param {Scene} scene - The scene for which this animation occurs
- * @param {boolean} loops - Whether or not this animation will loop forever
- * @returns An animatable representing the rotation of the passed planet, at the rate of 1 second = 12 hrs
+ * @param {BABYLON.AnimationGroup} group - The animation group to add this animation to
  */
-var rotatePlanet = function rotatePlanet(planet, tilt, dayLength, scene) {
-  var loops = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
+var rotatePlanet = function rotatePlanet(planet, tilt, dayLength, group) {
   //tilt on axis
   planet.rotation = new BABYLON.Vector3(tilt * Math.PI / 180, 0, Math.PI);
   planet["rotYLocal"] = 0;
@@ -201,15 +198,14 @@ var rotatePlanet = function rotatePlanet(planet, tilt, dayLength, scene) {
     value: 2 * Math.PI
   });
   planetRotAnim.setKeys(planetRotKeys);
-  var animatable = scene.beginDirectAnimation(planet, [planetRotAnim], 0, 4 * frameRate * dayLength, loops, 1);
-  return animatable;
+  group.addTargetedAnimation(planetRotAnim, planet);
 };
 /**
  * Uses Kepler's Equation to solve for points along a planet's orbit, each spaced 6 minutes apart
- * @param {*} eccentricity - The eccentricity of the orbit to calculate (c/a)
- * @param {*} period - The period of the planet's orbit, in Earth days
- * @param {*} a - The The length of the semi-major axis of the orbit's ellipse (in scene units)
- * @returns {Vector3[]} An array of vectors which define the points of the orbit's ellipse
+ * @param {number} eccentricity - The eccentricity of the orbit to calculate (c/a)
+ * @param {number} period - The period of the planet's orbit, in Earth days
+ * @param {number} a - The The length of the semi-major axis of the orbit's ellipse (in scene units)
+ * @returns {BABYLON.Vector3[]} An array of vectors which define the points of the orbit's ellipse
  */
 
 
@@ -260,18 +256,19 @@ var orbitPath = function orbitPath(eccentricity, period, a) {
 };
 /**
  * Models and animates the orbit of a planet
- * @param {*} planet - The planet mesh for which to animate the orbit
- * @param {*} eccentricity - The eccentricity of the planet's orbit, as a value between 0 and 1
- * @param {*} period - The length of time for one full revolution of orbit, in Earth days
- * @param {*} a - The length of the semi-major axis of the orbit's ellipse (in scene units)
- * @param {*} scene - The scene on which this animation occurs
- * @returns An animatable representing the planet's orbit and the mesh for the orbit in an array
+ * @param {BABYLON.Mesh} planet - The planet mesh for which to animate the orbit
+ * @param {Number} eccentricity - The eccentricity of the planet's orbit, as a value between 0 and 1
+ * @param {Number} period - The length of time for one full revolution of orbit, in Earth days
+ * @param {Number} a - The length of the semi-major axis of the orbit's ellipse (in scene units)
+ * @param {BABYLON.AnimationGroup} group - The animation group to add this animation to
+ * @param {BABYLON.Scene} scene - The scene on which this animation occurs
+ * @returns The mesh of the orbit path
  */
 
 
 exports.orbitPath = orbitPath;
 
-var animOrbit = function animOrbit(planet, eccentricity, period, a, scene) {
+var animOrbit = function animOrbit(planet, eccentricity, period, a, group, scene) {
   //define path using steps of 6 minutes
   var path = orbitPath(eccentricity, period, a);
   var track = BABYLON.MeshBuilder.CreateLines(planet.name + 'Track', {
@@ -299,8 +296,8 @@ var animOrbit = function animOrbit(planet, eccentricity, period, a, scene) {
     value: period * 24 * 10
   });
   planetOrbitAnim.setKeys(planetOrbitKeys);
-  var animatable = scene.beginDirectAnimation(planet, [planetOrbitAnim], 0, period * 24 * 10, true, 1);
-  return [animatable, track];
+  group.addTargetedAnimation(planetOrbitAnim, planet);
+  return track;
 };
 
 exports.animOrbit = animOrbit;
@@ -340,7 +337,8 @@ var engine = new BABYLON.Engine(canvas, true);
 var createScene = function createScene() {
   var scene = new BABYLON.Scene(engine);
   scene.collisionsEnabled = true;
-  scene["planets"] = [];
+  scene["planets"] = []; //keep track of all pressed keys
+
   var pressedKeys = {};
 
   window.onkeyup = function (e) {
@@ -375,7 +373,8 @@ var createScene = function createScene() {
 
   scene.imageProcessingConfiguration.toneMappingEnabled = true;
   scene.imageProcessingConfiguration.toneMappingType = BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
-  scene.imageProcessingConfiguration.exposure = 3; //create particle system from provided assets: https://github.com/BabylonJS/Assets/blob/master/particles/systems/sun.json
+  scene.imageProcessingConfiguration.exposure = 3; //------------------Meshes & Lights----------------------
+  //create particle system from provided assets: https://github.com/BabylonJS/Assets/blob/master/particles/systems/sun.json
 
   var sunParticles = new BABYLON.ParticleHelper.CreateAsync("sun", scene).then(function (set) {
     set.systems[0].renderingGroupId = 3;
@@ -429,14 +428,20 @@ var createScene = function createScene() {
     BABYLON.ActionManager.OnLeftPickTrigger, camera, 'radius', 1.5, 300, new BABYLON.PredicateCondition(scene.meshes[i].actionManager, function () {
       return pressedKeys["70"];
     })));
-  } //create animations for planet rotations
+  } //--------------------------Planet Animations------------------------
+  //create animations for planet rotations
 
 
-  var earthRotAnimatable = (0, _planetMovements.rotatePlanet)(earth, 22.5, 1, scene, true); //create animations for planet orbits
+  var rotationAnims = new BABYLON.AnimationGroup("rotationGroup");
+  (0, _planetMovements.rotatePlanet)(earth, 22.5, 1, rotationAnims);
+  rotationAnims.normalize();
+  rotationAnims.play(true); //create animations for planet orbits
 
-  var earthOrbit = (0, _planetMovements.animOrbit)(earth, 0.01671, 365, 10, scene);
-  var earthOrbitAnimatable = earthOrbit[0];
-  var earthTrack = earthOrbit[1]; //create Babylon GUI for speed controls in top left
+  var orbitAnims = new BABYLON.AnimationGroup("orbitGroup");
+  var earthTrack = (0, _planetMovements.animOrbit)(earth, 0.01671, 365, 10, orbitAnims, scene);
+  orbitAnims.normalize();
+  orbitAnims.play(true); //----------------------------GUI-------------------------------
+  //create Babylon GUI for speed controls in top left
 
   var advancedTexture = BGUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
   advancedTexture.layer.layerMask = 2;
@@ -496,32 +501,34 @@ var createScene = function createScene() {
   slider.width = window.innerWidth / 3 - 50 + "px";
   slider.onValueChangedObservable.add(function (value) {
     header.text = speedString(value);
-    earthOrbitAnimatable.speedRatio = value; //cap the rotation speed at 20pi radians/sec
+    orbitAnims.speedRatio = value; //cap the rotation speed at 20pi radians/sec
 
     if (value <= 40) {
-      earthRotAnimatable.speedRatio = value;
+      rotationAnims.speedRatio = value;
     } else {
-      earthRotAnimatable.speedRatio = 40;
+      rotationAnims.speedRatio = 40;
     }
   });
-  panel.addControl(slider); // Invisible Wall (set it at a good distance)
+  panel.addControl(slider); //-----------------Dragging Controls---------------
+  //Plane on xz axis for projection of mouse rays when dragging
 
   var orbitPlane = BABYLON.MeshBuilder.CreateGround("orbitPlane", {
-    width: 30,
-    height: 30
+    width: 500,
+    height: 500
   }, scene);
   orbitPlane.isPickable = true;
-  orbitPlane.isBlocker = false; // We need this to let the system select invisible meshes
+  orbitPlane.isBlocker = false;
+  orbitPlane.isVisible = false;
 
   scene.pointerDownPredicate = function (mesh) {
     return mesh.isPickable;
-  }; //dragging
+  }; //Uses orbitPlane to pick mouse position
 
 
   var startingPoint;
   var currentMesh;
 
-  var getGroundPosition = function getGroundPosition() {
+  var getPickPosition = function getPickPosition() {
     var pickinfo = scene.pick(scene.pointerX, scene.pointerY, function (mesh) {
       return mesh == orbitPlane;
     });
@@ -531,19 +538,20 @@ var createScene = function createScene() {
     }
 
     return null;
-  };
+  }; //enable dragging controls
 
-  var pointerDown = function pointerDown(mesh) {
+
+  var pointerDragDown = function pointerDragDown(mesh) {
     currentMesh = mesh;
-    startingPoint = getGroundPosition();
+    startingPoint = getPickPosition();
 
     if (startingPoint) {
-      //we need to disconnect camera from canvas
       setTimeout(function () {
         camera.detachControl(canvas);
       }, 0);
     }
-  };
+  }; //disable dragging controls
+
 
   var pointerUp = function pointerUp() {
     if (startingPoint) {
@@ -551,14 +559,15 @@ var createScene = function createScene() {
       startingPoint = null;
       return;
     }
-  };
+  }; //when cursor moves
+
 
   var pointerMove = function pointerMove() {
     if (!startingPoint) {
       return;
     }
 
-    var current = getGroundPosition();
+    var current = getPickPosition();
 
     if (!current) {
       return;
@@ -579,7 +588,8 @@ var createScene = function createScene() {
     } else {
       startIndex = 3 * currentMesh.ellipse.length / 4;
       endIndex = currentMesh.ellipse.length;
-    }
+    } //check for closest point to mouse on orbit path
+
 
     var closestFrame = startIndex;
     var closestDist = current.subtract(currentMesh.ellipse[closestFrame]).length();
@@ -591,15 +601,16 @@ var createScene = function createScene() {
       }
     }
 
-    earthOrbitAnimatable.goToFrame(closestFrame);
-    startingPoint = current;
-  };
+    orbitAnims.goToFrame(closestFrame);
+  }; //call methods when mouse clicked or dragged
+
 
   scene.onPointerObservable.add(function (pointerInfo) {
     switch (pointerInfo.type) {
       case BABYLON.PointerEventTypes.POINTERDOWN:
-        if (pointerInfo.pickInfo.hit && scene.planets.includes(pointerInfo.pickInfo.pickedMesh)) {
-          pointerDown(pointerInfo.pickInfo.pickedMesh);
+        //if for a drag on a planet, call the method
+        if (pointerInfo.pickInfo.hit && scene.planets.includes(pointerInfo.pickInfo.pickedMesh) && pressedKeys["68"]) {
+          pointerDragDown(pointerInfo.pickInfo.pickedMesh);
         }
 
         break;
@@ -621,6 +632,7 @@ var createScene = function createScene() {
   //     earth.ellipse = path;
   //     console.log(path);
   // }, 2000);
+  //--------------Debugging Axis----------------
 
   function showWorldAxis(size) {
     var makeTextPlane = function makeTextPlane(text, color, size) {
