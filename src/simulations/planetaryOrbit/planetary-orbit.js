@@ -11,7 +11,6 @@ var createScene = function () {
     scene.collisionsEnabled = true;
     scene["planets"] = [];
 
-    var selectedMesh;
     var pressedKeys = {};
     window.onkeyup = function(e) { pressedKeys[e.keyCode] = false; }
     window.onkeydown = function(e) { pressedKeys[e.keyCode] = true; }
@@ -98,6 +97,7 @@ var createScene = function () {
     //set settings for focusing and camera action w/ meshes in scene
     for (var i = 1; i < scene.meshes.length; i++){
         scene.meshes[i].checkCollisions = true;
+        scene.meshes[i].isPickable = true;
 
         //make camera focus on mesh when mesh clicked and 'f' key held
         scene.meshes[i].actionManager = new BABYLON.ActionManager(scene);
@@ -119,10 +119,12 @@ var createScene = function () {
     var earthOrbitAnimatable = earthOrbit[0];
     var earthTrack = earthOrbit[1];
 
+    //create Babylon GUI for speed controls in top left
     var advancedTexture = BGUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
     advancedTexture.layer.layerMask = 2;
     advancedTexture.renderScale = 1;
 
+    //speed control stack panel
     var panel = new BGUI.StackPanel();
     panel.width = (window.innerWidth / 3)+ "px";
     panel.horizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
@@ -160,6 +162,7 @@ var createScene = function () {
         return "Speed: " + Math.round(sliderValue * 43200) + "x   |   1 second = " + conversion;
     }
 
+    //text for and slider for the speed
     var header = new BGUI.TextBlock();
     header.text = speedString(1);
     header.height = "40px";
@@ -193,6 +196,30 @@ var createScene = function () {
         }
     });
     panel.addControl(slider);
+
+    var mouseDraggable = false;
+    //dragging
+    scene.onPointerDown = function castRay(){
+        var ray = scene.createPickingRay(scene.pointerX, scene.pointerY, BABYLON.Matrix.Identity(), camera);	
+
+        var hit = scene.pickWithRay(ray);
+
+        if (hit.pickedMesh && scene.planets.includes(hit.pickedMesh)){
+            console.log("picked");
+            mouseDraggable = hit;
+
+        }
+    };
+    scene.onPointerMove = function() {
+        if (mouseDraggable != false){
+            console.log("hee");
+            camera.detachControl(canvas);
+        }
+    };
+    scene.onPointerUp = function() {
+        mouseDraggable = false;
+        camera.attachControl(canvas, true);
+    };
 
 
     // change eccentricity
@@ -239,7 +266,7 @@ var createScene = function () {
         var zChar = makeTextPlane("Z", "blue", size / 10);
         zChar.position = new BABYLON.Vector3(0, 0.05 * size, 0.9 * size);
     };
-    showWorldAxis(15);
+    //showWorldAxis(15);
 
     function localAxes(size, mesh) {
         var pilot_local_axisX = BABYLON.Mesh.CreateLines("pilot_local_axisX", [ 
@@ -270,7 +297,7 @@ var createScene = function () {
         return local_origin;
         
     }
-    localAxes(4, earth);
+    //localAxes(4, earth);
 
     //loading screen
     engine.displayLoadingUI();
@@ -289,7 +316,7 @@ engine.runRenderLoop(function () {
         scene.planets[i].rotate(BABYLON.Axis.Y, scene.planets[i].rotYLocal - scene.planets[i].prevRotYLocal, BABYLON.Space.LOCAL);
         scene.planets[i].prevRotYLocal = scene.planets[i].rotYLocal;  
 
-        scene.planets[i].setAbsolutePosition(scene.planets[i].ellipse[Math.floor(scene.planets[i].orbitSegment)]);
+        //scene.planets[i].setAbsolutePosition(scene.planets[i].ellipse[Math.floor(scene.planets[i].orbitSegment)]);
     }
     
     scene.render();
