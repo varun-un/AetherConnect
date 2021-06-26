@@ -12,16 +12,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
 
+    <script src="./planetary-orbit.js" defer></script>
+
 </head>
 
 <body>
     <!--Canvas for scene-->
     <canvas id="canvas"></canvas>
 
-    <script src="./panels.js"></script>
-    <script src="./planetary-orbit.js" defer></script>
-
-    <div class='controlsCard gsapFade' onclick="start2()">
+    <div class='controlsCard gsapFade'>
         <h3>Controls</h3>
         <div id='controls'>
             <div class='controlFlex left'>
@@ -41,11 +40,13 @@
                 <p class='controlIcon right'>Zoom in/out</p>
                 <p class='controlIcon right'>Pan view</p>
                 <p class='controlIcon right'>Drag selected planet</p>
-                <p class='controlIcon right' style='line-height: normal;'>Focus on selected planet</p>
+                <p class='controlIcon right' style='line-height: normal;'>Focus on selected object</p>
             </div>
         </div>
         <p class="continueText">Click to continue</p>
     </div>
+
+    
 
 </body>
 </html>
