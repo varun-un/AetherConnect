@@ -6,7 +6,8 @@ import {rotatePlanet, animOrbit, orbitPath} from './planet-movements'
 //when browser is loaded, create the scene
 var canvas = document.getElementById('canvas')
 var engine = new BABYLON.Engine(canvas, true)
-var voiceover = new Audio('./planetary-orbit-voiceover.mp3')
+var voiceover = new Audio(require('./planetary-orbit-voiceover.mp3'))
+var isPlaying = true
 
 var createScene = function () {
     var scene = new BABYLON.Scene(engine)
@@ -435,6 +436,25 @@ function startSim() {
 
     controlsCard.removeEventListener('click', startSim)
 
-    // voiceover.play()
+    voiceover.play()
     
+}
+
+//--------------Audioplayer----------------
+var audioSlider = document.getElementById("audioSlider")
+
+var playButton = document.getElementById("audioButton")
+playButton.addEventListener('click', pauseAudio)
+
+function pauseAudio() {
+    if (isPlaying) {
+        voiceover.pause()
+        isPlaying = false
+        playButton.src = require('../../simAssets/audioIcons/play button.png')
+    }
+    else {
+        voiceover.play()
+        isPlaying = true
+        playButton.src = require('../../simAssets/audioIcons/pause button.png')
+    }
 }

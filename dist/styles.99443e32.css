@@ -113,4 +113,53 @@ body {
     60% { opacity: 1 }
 }
 
+.audioContainer {
+    position: absolute;
+    top: calc(100% - 45px);
+    width: 85%;
+    left: 8%;
+}
+
+#audioButton {
+    position: absolute;
+    left: 5%;
+    top: calc(100% - 49px);
+    cursor: default;
+}
+
+#audioButton:hover {
+    cursor: pointer;
+}
+
+#audioSlider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 20px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+}
+
+#audioSlider:hover {
+    opacity: 1;
+}
+
+#audioSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #04AA6D;
+    cursor: pointer;
+}
+
+#audioSlider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #04AA6D;
+    cursor: pointer;
+}
+
 /*# sourceMappingURL=/styles.99443e32.css.map */
