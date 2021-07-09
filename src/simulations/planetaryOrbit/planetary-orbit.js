@@ -461,6 +461,7 @@ function pauseAudio() {
 }
 
 var audioSlider = document.getElementById("audioSlider")
+var audioDuration = document.getElementById("audioDuration")
 
 //every second, update the slider position based on voiceover.currentTime
 setInterval(function () {
@@ -471,9 +472,24 @@ setInterval(function () {
         isPlaying = true
         pauseAudio()
     }
+
+    audioDuration.innerHTML = getMinutes(audioSlider.value)
 }, 1000)
 
 //use html audioSlider to control voiceover duration
 audioSlider.addEventListener('input', function() {  
     voiceover.currentTime = audioSlider.value
+})
+
+//method to convert seconds to minutes and seconds
+function getMinutes(time) {
+    var minutes = Math.floor(time / 60)
+    var seconds = time % 60
+    return minutes + ":" + (seconds < 10 ? "0" : "") + seconds
+}
+
+//when audio slider change, update the audio duration
+audioSlider.addEventListener('input', function() {
+    audioDuration.innerHTML = getMinutes(audioSlider.value)
+    console.log('hello')
 })
