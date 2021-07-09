@@ -115,7 +115,7 @@ body {
 
 .audioContainer {
     position: absolute;
-    top: calc(100% - 45px);
+    top: calc(100% - 42.5px);
     width: 85%;
     left: 8%;
 }
@@ -124,22 +124,25 @@ body {
     position: absolute;
     left: 5%;
     top: calc(100% - 49px);
-    cursor: default;
+    opacity: 0.7;
+    cursor: pointer;
 }
 
 #audioButton:hover {
-    cursor: pointer;
+    opacity: 1;
 }
 
 #audioSlider {
     -webkit-appearance: none;
     width: 100%;
-    height: 20px;
-    background: #d3d3d3;
+    height: 15px;
+    background: #47474798;
     outline: none;
     opacity: 0.7;
     -webkit-transition: .2s;
     transition: opacity .2s;
+    cursor: pointer;
+    border-radius: 5px;
 }
 
 #audioSlider:hover {
@@ -151,15 +154,14 @@ body {
     appearance: none;
     width: 20px;
     height: 20px;
-    background: #04AA6D;
-    cursor: pointer;
+    background: #ccccccff;
+    border-radius: 10px;
 }
 
 #audioSlider::-moz-range-thumb {
     width: 20px;
     height: 20px;
-    background: #04AA6D;
-    cursor: pointer;
+    background: #ccccccff;
 }
 
 /*# sourceMappingURL=/styles.99443e32.css.map */
