@@ -437,12 +437,13 @@ function startSim() {
     controlsCard.removeEventListener('click', startSim)
 
     voiceover.play()
+
+    //set audio slider max to voiceover duration
+    audioSlider.max = voiceover.duration
     
 }
 
 //--------------Audioplayer----------------
-var audioSlider = document.getElementById("audioSlider")
-
 var playButton = document.getElementById("audioButton")
 playButton.addEventListener('click', pauseAudio)
 
@@ -458,3 +459,21 @@ function pauseAudio() {
         playButton.src = require('../../simAssets/audioIcons/pause button.png')
     }
 }
+
+var audioSlider = document.getElementById("audioSlider")
+
+//every second, update the slider position based on voiceover.currentTime
+setInterval(function () {
+    audioSlider.value = voiceover.currentTime
+
+    //if audio is at the end, call pauseAudio
+    if (voiceover.currentTime >= voiceover.duration) {
+        isPlaying = true
+        pauseAudio()
+    }
+}, 1000)
+
+//use html audioSlider to control voiceover duration
+audioSlider.addEventListener('input', function() {  
+    voiceover.currentTime = audioSlider.value
+})
