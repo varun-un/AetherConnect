@@ -128,7 +128,7 @@ var createScene = function () {
 
     //create animations for planet orbits
     var orbitAnims = new BABYLON.AnimationGroup("orbitGroup")
-    var earthTrack = animOrbit(earth, 0.01671, 365, 10, orbitAnims, scene)
+    var earthTrack = animOrbit(earth, 0.41671, 365, 10, orbitAnims, scene)
     orbitAnims.normalize()
     orbitAnims.play(true)
 
@@ -463,19 +463,6 @@ function pauseAudio() {
 var audioSlider = document.getElementById("audioSlider")
 var audioDuration = document.getElementById("audioDuration")
 
-//every second, update the slider position based on voiceover.currentTime
-setInterval(function () {
-    audioSlider.value = voiceover.currentTime
-
-    //if audio is at the end, call pauseAudio
-    if (voiceover.currentTime >= voiceover.duration) {
-        isPlaying = true
-        pauseAudio()
-    }
-
-    audioDuration.innerHTML = getMinutes(audioSlider.value)
-}, 1000)
-
 //use html audioSlider to control voiceover duration
 audioSlider.addEventListener('input', function() {  
     voiceover.currentTime = audioSlider.value
@@ -493,3 +480,38 @@ audioSlider.addEventListener('input', function() {
     audioDuration.innerHTML = getMinutes(audioSlider.value)
     console.log('hello')
 })
+
+
+//every second, run the loop
+setInterval(function () {
+
+    //update the slider location
+    audioSlider.value = voiceover.currentTime
+
+    //if audio is at the end, call pauseAudio
+    if (voiceover.currentTime >= voiceover.duration) {
+        isPlaying = true
+        pauseAudio()
+    }
+
+    audioDuration.innerHTML = getMinutes(audioSlider.value)
+
+
+    //------------------Scene Events-------------------
+    if (voiceover.currentTime > 43) {
+
+        var earthPath = scene.getMeshByName("earth").ellipse
+
+        var majorAxis = BABYLON.MeshBuilder.CreateLines("majorAxis", {points: [
+            earthPath[0], earthPath[Math.floor(earthPath.length / 2)]
+        ]}, scene)
+        majorAxis.color = BABYLON.Color3.Blue()
+
+        var minorAxis = BABYLON.MeshBuilder.CreateLines("minorAxis", {points: [
+            earthPath[16080], earthPath[earthPath.length - 16080]
+        ]}, scene)
+        minorAxis.color = BABYLON.Color3.Green()
+    }
+
+
+}, 1000)
