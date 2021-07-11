@@ -5661,7 +5661,7 @@ function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 /**
- * 
+ * Create the rotation animation for the planet
  * @param {Mesh} planet - The Mesh for which to perform the rotation on
  * @param {number} tilt - The angle of tilt of the planet in degrees
  * @param {number} dayLength - The length of one rotation period of the planet (in Earth days)
@@ -6280,6 +6280,32 @@ setInterval(function () {
     }, scene);
     minorAxis.color = BABYLON.Color3.Green();
   }
+
+  if (voiceover.currentTime > 47) {
+    //add BGUI label with advanced dynamic texture to label major axis
+    var majorAxisLabel = BABYLON.Mesh.CreatePlane("majorAxisLabel", 2, scene);
+    majorAxisLabel.position = new BABYLON.Vector3(-.3, 0, -12.5);
+    majorAxisLabel.rotate(BABYLON.Axis.X, Math.PI / 2, BABYLON.Space.GLOBAL);
+    majorAxisLabel.rotate(BABYLON.Axis.Z, Math.PI / 2, BABYLON.Space.GLOBAL);
+    var majorAxisTexture = BGUI.AdvancedDynamicTexture.CreateForMesh(majorAxisLabel);
+    var majorAxisText = new BGUI.TextBlock();
+    majorAxisText.text = "major axis";
+    majorAxisText.color = "blue";
+    majorAxisText.fontSize = 162;
+    majorAxisText.fontFamily = 'Roboto';
+    majorAxisTexture.addControl(majorAxisText); //add BGUI label with advanced dynamic texture to label minor axis
+
+    var minorAxisLabel = BABYLON.Mesh.CreatePlane("minorAxisLabel", 2, scene);
+    minorAxisLabel.position = new BABYLON.Vector3(-7.4, 0, -3.85);
+    minorAxisLabel.rotate(BABYLON.Axis.X, Math.PI / 2, BABYLON.Space.GLOBAL);
+    var minorAxisTexture = BGUI.AdvancedDynamicTexture.CreateForMesh(minorAxisLabel);
+    var minorAxisText = new BGUI.TextBlock();
+    minorAxisText.text = "minor axis";
+    minorAxisText.color = "green";
+    minorAxisText.fontSize = 162;
+    minorAxisText.fontFamily = 'Roboto';
+    minorAxisTexture.addControl(minorAxisText);
+  }
 }, 1000);
 },{"babylonjs":"../../node_modules/babylonjs/babylon.js","babylonjs-gui":"../../node_modules/babylonjs-gui/babylon.gui.min.js","gsap":"../../node_modules/gsap/index.js","./planet-movements":"../simulations/planetaryOrbit/planet-movements.js","./planetary-orbit-voiceover.mp3":"../simulations/planetaryOrbit/planetary-orbit-voiceover.mp3","../../simAssets/skybox/milkyway/milkyway_px.jpg":"../simAssets/skybox/milkyway/milkyway_px.jpg","../../simAssets/skybox/milkyway/milkyway_py.jpg":"../simAssets/skybox/milkyway/milkyway_py.jpg","../../simAssets/skybox/milkyway/milkyway_pz.jpg":"../simAssets/skybox/milkyway/milkyway_pz.jpg","../../simAssets/skybox/milkyway/milkyway_nx.jpg":"../simAssets/skybox/milkyway/milkyway_nx.jpg","../../simAssets/skybox/milkyway/milkyway_ny.jpg":"../simAssets/skybox/milkyway/milkyway_ny.jpg","../../simAssets/skybox/milkyway/milkyway_nz.jpg":"../simAssets/skybox/milkyway/milkyway_nz.jpg","../../simAssets/earthTextures/2k-earth-daymap.jpg":"../simAssets/earthTextures/2k-earth-daymap.jpg","../../simAssets/earthTextures/2k-earth-normal.jpg":"../simAssets/earthTextures/2k-earth-normal.jpg","../../simAssets/audioIcons/play button.png":"../simAssets/audioIcons/play button.png","../../simAssets/audioIcons/pause button.png":"../simAssets/audioIcons/pause button.png"}],"../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
@@ -6309,7 +6335,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58271" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "64796" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

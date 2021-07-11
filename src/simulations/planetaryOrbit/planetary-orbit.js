@@ -513,5 +513,38 @@ setInterval(function () {
         minorAxis.color = BABYLON.Color3.Green()
     }
 
+    if (voiceover.currentTime > 47) {
+        
+        //add BGUI label with advanced dynamic texture to label major axis
+        var majorAxisLabel = BABYLON.Mesh.CreatePlane("majorAxisLabel", 2, scene);
+        majorAxisLabel.position = new BABYLON.Vector3(-.3, 0, -12.5)
+        majorAxisLabel.rotate(BABYLON.Axis.X, Math.PI / 2, BABYLON.Space.GLOBAL)
+        majorAxisLabel.rotate(BABYLON.Axis.Z, Math.PI / 2, BABYLON.Space.GLOBAL)
+
+        var majorAxisTexture = BGUI.AdvancedDynamicTexture.CreateForMesh(majorAxisLabel);
+
+        var majorAxisText = new BGUI.TextBlock();
+        majorAxisText.text = "major axis";
+        majorAxisText.color = "blue";
+        majorAxisText.fontSize = 162;
+        majorAxisText.fontFamily = 'Roboto'
+        majorAxisTexture.addControl(majorAxisText); 
+
+        //add BGUI label with advanced dynamic texture to label minor axis
+        var minorAxisLabel = BABYLON.Mesh.CreatePlane("minorAxisLabel", 2, scene);
+        minorAxisLabel.position = new BABYLON.Vector3(-7.4, 0, -3.85)
+        minorAxisLabel.rotate(BABYLON.Axis.X, Math.PI / 2, BABYLON.Space.GLOBAL)
+
+        var minorAxisTexture = BGUI.AdvancedDynamicTexture.CreateForMesh(minorAxisLabel);
+
+        var minorAxisText = new BGUI.TextBlock();
+        minorAxisText.text = "minor axis";
+        minorAxisText.color = "green";
+        minorAxisText.fontSize = 162;
+        minorAxisText.fontFamily = 'Roboto'
+        minorAxisTexture.addControl(minorAxisText);
+
+    }
+
 
 }, 1000)

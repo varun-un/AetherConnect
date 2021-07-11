@@ -1,7 +1,7 @@
 import * as BABYLON from 'babylonjs';
 
 /**
- * 
+ * Create the rotation animation for the planet
  * @param {Mesh} planet - The Mesh for which to perform the rotation on
  * @param {number} tilt - The angle of tilt of the planet in degrees
  * @param {number} dayLength - The length of one rotation period of the planet (in Earth days)
