@@ -478,7 +478,6 @@ function getMinutes(time) {
 //when audio slider change, update the audio duration
 audioSlider.addEventListener('input', function() {
     audioDuration.innerHTML = getMinutes(audioSlider.value)
-    console.log('hello')
 })
 
 
@@ -498,6 +497,7 @@ setInterval(function () {
 
 
     //------------------Scene Events-------------------
+    //add major and minor axis
     if (voiceover.currentTime > 43) {
 
         var earthPath = scene.getMeshByName("earth").ellipse
@@ -513,6 +513,7 @@ setInterval(function () {
         minorAxis.color = BABYLON.Color3.Green()
     }
 
+    //add major and minor axis labels
     if (voiceover.currentTime > 47) {
         
         //add BGUI label with advanced dynamic texture to label major axis
@@ -543,7 +544,21 @@ setInterval(function () {
         minorAxisText.fontSize = 162;
         minorAxisText.fontFamily = 'Roboto'
         minorAxisTexture.addControl(minorAxisText);
+    }
 
+    if (voiceover.currentTime > 90) {
+        //destroy axis labels
+        scene.removeMesh(majorAxisLabel)
+        scene.removeMesh(minorAxisLabel)
+
+        if (scene.getMeshByName("majorAxisLabel") != null) {
+            scene.getMeshByName("majorAxisLabel").dispose()
+            scene.getMeshByName("minorAxisLabel").dispose()
+        }
+    }
+
+    if(voiceover.currentTime > 1) {
+        
     }
 
 

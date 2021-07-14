@@ -6255,7 +6255,6 @@ function getMinutes(time) {
 
 audioSlider.addEventListener('input', function () {
   audioDuration.innerHTML = getMinutes(audioSlider.value);
-  console.log('hello');
 }); //every second, run the loop
 
 setInterval(function () {
@@ -6268,6 +6267,7 @@ setInterval(function () {
   }
 
   audioDuration.innerHTML = getMinutes(audioSlider.value); //------------------Scene Events-------------------
+  //add major and minor axis
 
   if (voiceover.currentTime > 43) {
     var earthPath = scene.getMeshByName("earth").ellipse;
@@ -6279,7 +6279,8 @@ setInterval(function () {
       points: [earthPath[16080], earthPath[earthPath.length - 16080]]
     }, scene);
     minorAxis.color = BABYLON.Color3.Green();
-  }
+  } //add major and minor axis labels
+
 
   if (voiceover.currentTime > 47) {
     //add BGUI label with advanced dynamic texture to label major axis
@@ -6306,6 +6307,19 @@ setInterval(function () {
     minorAxisText.fontFamily = 'Roboto';
     minorAxisTexture.addControl(minorAxisText);
   }
+
+  if (voiceover.currentTime > 90) {
+    //destroy axis labels
+    scene.removeMesh(majorAxisLabel);
+    scene.removeMesh(minorAxisLabel);
+
+    if (scene.getMeshByName("majorAxisLabel") != null) {
+      scene.getMeshByName("majorAxisLabel").dispose();
+      scene.getMeshByName("minorAxisLabel").dispose();
+    }
+  }
+
+  if (voiceover.currentTime > 1) {}
 }, 1000);
 },{"babylonjs":"../../node_modules/babylonjs/babylon.js","babylonjs-gui":"../../node_modules/babylonjs-gui/babylon.gui.min.js","gsap":"../../node_modules/gsap/index.js","./planet-movements":"../simulations/planetaryOrbit/planet-movements.js","./planetary-orbit-voiceover.mp3":"../simulations/planetaryOrbit/planetary-orbit-voiceover.mp3","../../simAssets/skybox/milkyway/milkyway_px.jpg":"../simAssets/skybox/milkyway/milkyway_px.jpg","../../simAssets/skybox/milkyway/milkyway_py.jpg":"../simAssets/skybox/milkyway/milkyway_py.jpg","../../simAssets/skybox/milkyway/milkyway_pz.jpg":"../simAssets/skybox/milkyway/milkyway_pz.jpg","../../simAssets/skybox/milkyway/milkyway_nx.jpg":"../simAssets/skybox/milkyway/milkyway_nx.jpg","../../simAssets/skybox/milkyway/milkyway_ny.jpg":"../simAssets/skybox/milkyway/milkyway_ny.jpg","../../simAssets/skybox/milkyway/milkyway_nz.jpg":"../simAssets/skybox/milkyway/milkyway_nz.jpg","../../simAssets/earthTextures/2k-earth-daymap.jpg":"../simAssets/earthTextures/2k-earth-daymap.jpg","../../simAssets/earthTextures/2k-earth-normal.jpg":"../simAssets/earthTextures/2k-earth-normal.jpg","../../simAssets/audioIcons/play button.png":"../simAssets/audioIcons/play button.png","../../simAssets/audioIcons/pause button.png":"../simAssets/audioIcons/pause button.png"}],"../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
@@ -6335,7 +6349,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "64796" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53481" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
