@@ -2,6 +2,7 @@ import * as BABYLON from 'babylonjs'
 import * as BGUI from 'babylonjs-gui'
 import { TweenMax, Power2 } from "gsap"
 import {rotatePlanet, animOrbit, orbitPath} from './planet-movements'
+const earcut = window.earcut
 
 //when browser is loaded, create the scene
 var canvas = document.getElementById('canvas')
@@ -496,9 +497,11 @@ setInterval(function () {
     audioDuration.innerHTML = getMinutes(audioSlider.value)
 
 
+
+
     //------------------Scene Events-------------------
     //add major and minor axis
-    if (voiceover.currentTime > 43) {
+    if (voiceover.currentTime > 43 && !(scene.getMeshByName("majorAxis"))) {
 
         var earthPath = scene.getMeshByName("earth").ellipse
 
@@ -514,7 +517,7 @@ setInterval(function () {
     }
 
     //add major and minor axis labels
-    if (voiceover.currentTime > 47) {
+    if (voiceover.currentTime > 47 && !(scene.getMaterialByName("majorAxisLabel"))) {
         
         //add BGUI label with advanced dynamic texture to label major axis
         var majorAxisLabel = BABYLON.Mesh.CreatePlane("majorAxisLabel", 2, scene);
@@ -557,8 +560,29 @@ setInterval(function () {
         }
     }
 
-    if(voiceover.currentTime > 1) {
+    if(voiceover.currentTime > 1 && !(scene.getMeshByName("rightSector"))) {
         
+        var earthPath = scene.getMeshByName("earth").ellipse
+        var rightSectorPoints = [new BABYLON.Vector2(0, 0)], leftSectorPoints = [new BABYLON.Vector2(0, 0)]
+
+        //get the points for the right sector under 0
+        for (var i = earthPath.length - Math.floor(earthPath.length / 24); i < earthPath.length; i++) {   
+            rightSectorPoints.push(new BABYLON.Vector2(earthPath[i].x, earthPath[i].z))
+        }
+        //get the points for the right sector over 0
+        for (var i = 0; i <= Math.floor(earthPath.length / 24); i++) {
+            rightSectorPoints.push(new BABYLON.Vector2(earthPath[i].x, earthPath[i].z))
+        }
+        rightSectorPoints.push(new BABYLON.Vector2(0, 0))
+
+        var rightSector = new BABYLON.PolygonMeshBuilder("rightSector", rightSectorPoints, scene, earcut).build()
+        var sectorMat = new BABYLON.StandardMaterial("rightSector", scene)
+        sectorMat.emissiveColor = new BABYLON.Color3(1, 0, 0)
+        rightSector.material = sectorMat
+
+        console.log(scene.meshes)
+        console.log(rightSector)
+        console.log(rightSectorPoints)
     }
 
 

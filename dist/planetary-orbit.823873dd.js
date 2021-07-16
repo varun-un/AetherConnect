@@ -5829,7 +5829,8 @@ function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return 
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-//when browser is loaded, create the scene
+var earcut = window.earcut; //when browser is loaded, create the scene
+
 var canvas = document.getElementById('canvas');
 var engine = new BABYLON.Engine(canvas, true);
 var voiceover = new Audio(require('./planetary-orbit-voiceover.mp3'));
@@ -6269,7 +6270,7 @@ setInterval(function () {
   audioDuration.innerHTML = getMinutes(audioSlider.value); //------------------Scene Events-------------------
   //add major and minor axis
 
-  if (voiceover.currentTime > 43) {
+  if (voiceover.currentTime > 43 && !scene.getMeshByName("majorAxis")) {
     var earthPath = scene.getMeshByName("earth").ellipse;
     var majorAxis = BABYLON.MeshBuilder.CreateLines("majorAxis", {
       points: [earthPath[0], earthPath[Math.floor(earthPath.length / 2)]]
@@ -6282,7 +6283,7 @@ setInterval(function () {
   } //add major and minor axis labels
 
 
-  if (voiceover.currentTime > 47) {
+  if (voiceover.currentTime > 47 && !scene.getMaterialByName("majorAxisLabel")) {
     //add BGUI label with advanced dynamic texture to label major axis
     var majorAxisLabel = BABYLON.Mesh.CreatePlane("majorAxisLabel", 2, scene);
     majorAxisLabel.position = new BABYLON.Vector3(-.3, 0, -12.5);
@@ -6319,7 +6320,29 @@ setInterval(function () {
     }
   }
 
-  if (voiceover.currentTime > 1) {}
+  if (voiceover.currentTime > 1 && !scene.getMeshByName("rightSector")) {
+    var earthPath = scene.getMeshByName("earth").ellipse;
+    var rightSectorPoints = [new BABYLON.Vector2(0, 0)],
+        leftSectorPoints = [new BABYLON.Vector2(0, 0)]; //get the points for the right sector under 0
+
+    for (var i = earthPath.length - Math.floor(earthPath.length / 24); i < earthPath.length; i++) {
+      rightSectorPoints.push(new BABYLON.Vector2(earthPath[i].x, earthPath[i].z));
+    } //get the points for the right sector over 0
+
+
+    for (var i = 0; i <= Math.floor(earthPath.length / 24); i++) {
+      rightSectorPoints.push(new BABYLON.Vector2(earthPath[i].x, earthPath[i].z));
+    }
+
+    rightSectorPoints.push(new BABYLON.Vector2(0, 0));
+    var rightSector = new BABYLON.PolygonMeshBuilder("rightSector", rightSectorPoints, scene, earcut).build();
+    var sectorMat = new BABYLON.StandardMaterial("rightSector", scene);
+    sectorMat.emissiveColor = new BABYLON.Color3(1, 0, 0);
+    rightSector.material = sectorMat;
+    console.log(scene.meshes);
+    console.log(rightSector);
+    console.log(rightSectorPoints);
+  }
 }, 1000);
 },{"babylonjs":"../../node_modules/babylonjs/babylon.js","babylonjs-gui":"../../node_modules/babylonjs-gui/babylon.gui.min.js","gsap":"../../node_modules/gsap/index.js","./planet-movements":"../simulations/planetaryOrbit/planet-movements.js","./planetary-orbit-voiceover.mp3":"../simulations/planetaryOrbit/planetary-orbit-voiceover.mp3","../../simAssets/skybox/milkyway/milkyway_px.jpg":"../simAssets/skybox/milkyway/milkyway_px.jpg","../../simAssets/skybox/milkyway/milkyway_py.jpg":"../simAssets/skybox/milkyway/milkyway_py.jpg","../../simAssets/skybox/milkyway/milkyway_pz.jpg":"../simAssets/skybox/milkyway/milkyway_pz.jpg","../../simAssets/skybox/milkyway/milkyway_nx.jpg":"../simAssets/skybox/milkyway/milkyway_nx.jpg","../../simAssets/skybox/milkyway/milkyway_ny.jpg":"../simAssets/skybox/milkyway/milkyway_ny.jpg","../../simAssets/skybox/milkyway/milkyway_nz.jpg":"../simAssets/skybox/milkyway/milkyway_nz.jpg","../../simAssets/earthTextures/2k-earth-daymap.jpg":"../simAssets/earthTextures/2k-earth-daymap.jpg","../../simAssets/earthTextures/2k-earth-normal.jpg":"../simAssets/earthTextures/2k-earth-normal.jpg","../../simAssets/audioIcons/play button.png":"../simAssets/audioIcons/play button.png","../../simAssets/audioIcons/pause button.png":"../simAssets/audioIcons/pause button.png"}],"../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
@@ -6349,7 +6372,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53481" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59664" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
