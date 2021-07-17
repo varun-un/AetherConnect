@@ -6318,9 +6318,10 @@ setInterval(function () {
       scene.getMeshByName("majorAxisLabel").dispose();
       scene.getMeshByName("minorAxisLabel").dispose();
     }
-  }
+  } //create the shaded sectors
 
-  if (voiceover.currentTime > 1 && !scene.getMeshByName("rightSector")) {
+
+  if (voiceover.currentTime > 90 && !scene.getMeshByName("rightSector")) {
     var earthPath = scene.getMeshByName("earth").ellipse;
     var rightSectorPoints = [new BABYLON.Vector2(0, 0)],
         leftSectorPoints = [new BABYLON.Vector2(0, 0)]; //get the points for the right sector under 0
@@ -6334,14 +6335,21 @@ setInterval(function () {
       rightSectorPoints.push(new BABYLON.Vector2(earthPath[i].x, earthPath[i].z));
     }
 
-    rightSectorPoints.push(new BABYLON.Vector2(0, 0));
+    rightSectorPoints.push(new BABYLON.Vector2(0, 0)); //get the points for the left sector
+
+    for (var i = Math.floor(earthPath.length * 11 / 24); i <= Math.floor(earthPath.length * 13 / 24); i++) {
+      leftSectorPoints.push(new BABYLON.Vector2(earthPath[i].x, earthPath[i].z));
+    }
+
+    leftSectorPoints.push(new BABYLON.Vector2(0, 0)); //create the right sector
+
     var rightSector = new BABYLON.PolygonMeshBuilder("rightSector", rightSectorPoints, scene, earcut).build();
     var sectorMat = new BABYLON.StandardMaterial("rightSector", scene);
     sectorMat.emissiveColor = new BABYLON.Color3(1, 0, 0);
-    rightSector.material = sectorMat;
-    console.log(scene.meshes);
-    console.log(rightSector);
-    console.log(rightSectorPoints);
+    rightSector.material = sectorMat; //create the left sector
+
+    var leftSector = new BABYLON.PolygonMeshBuilder("leftSector", leftSectorPoints, scene, earcut).build();
+    leftSector.material = sectorMat;
   }
 }, 1000);
 },{"babylonjs":"../../node_modules/babylonjs/babylon.js","babylonjs-gui":"../../node_modules/babylonjs-gui/babylon.gui.min.js","gsap":"../../node_modules/gsap/index.js","./planet-movements":"../simulations/planetaryOrbit/planet-movements.js","./planetary-orbit-voiceover.mp3":"../simulations/planetaryOrbit/planetary-orbit-voiceover.mp3","../../simAssets/skybox/milkyway/milkyway_px.jpg":"../simAssets/skybox/milkyway/milkyway_px.jpg","../../simAssets/skybox/milkyway/milkyway_py.jpg":"../simAssets/skybox/milkyway/milkyway_py.jpg","../../simAssets/skybox/milkyway/milkyway_pz.jpg":"../simAssets/skybox/milkyway/milkyway_pz.jpg","../../simAssets/skybox/milkyway/milkyway_nx.jpg":"../simAssets/skybox/milkyway/milkyway_nx.jpg","../../simAssets/skybox/milkyway/milkyway_ny.jpg":"../simAssets/skybox/milkyway/milkyway_ny.jpg","../../simAssets/skybox/milkyway/milkyway_nz.jpg":"../simAssets/skybox/milkyway/milkyway_nz.jpg","../../simAssets/earthTextures/2k-earth-daymap.jpg":"../simAssets/earthTextures/2k-earth-daymap.jpg","../../simAssets/earthTextures/2k-earth-normal.jpg":"../simAssets/earthTextures/2k-earth-normal.jpg","../../simAssets/audioIcons/play button.png":"../simAssets/audioIcons/play button.png","../../simAssets/audioIcons/pause button.png":"../simAssets/audioIcons/pause button.png"}],"../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
@@ -6372,7 +6380,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59664" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56813" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

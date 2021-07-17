@@ -560,8 +560,9 @@ setInterval(function () {
         }
     }
 
-    if(voiceover.currentTime > 1 && !(scene.getMeshByName("rightSector"))) {
-        
+    //create the shaded sectors
+    if(voiceover.currentTime > 90 && !(scene.getMeshByName("rightSector"))) {
+
         var earthPath = scene.getMeshByName("earth").ellipse
         var rightSectorPoints = [new BABYLON.Vector2(0, 0)], leftSectorPoints = [new BABYLON.Vector2(0, 0)]
 
@@ -575,14 +576,23 @@ setInterval(function () {
         }
         rightSectorPoints.push(new BABYLON.Vector2(0, 0))
 
+
+        //get the points for the left sector
+        for (var i = Math.floor(earthPath.length * 11 / 24); i <= Math.floor(earthPath.length * 13 / 24); i++) {
+            leftSectorPoints.push(new BABYLON.Vector2(earthPath[i].x, earthPath[i].z))
+        }
+        leftSectorPoints.push(new BABYLON.Vector2(0, 0))
+
+        //create the right sector
         var rightSector = new BABYLON.PolygonMeshBuilder("rightSector", rightSectorPoints, scene, earcut).build()
         var sectorMat = new BABYLON.StandardMaterial("rightSector", scene)
         sectorMat.emissiveColor = new BABYLON.Color3(1, 0, 0)
         rightSector.material = sectorMat
 
-        console.log(scene.meshes)
-        console.log(rightSector)
-        console.log(rightSectorPoints)
+        //create the left sector
+        var leftSector = new BABYLON.PolygonMeshBuilder("leftSector", leftSectorPoints, scene, earcut).build()
+        leftSector.material = sectorMat
+
     }
 
 
