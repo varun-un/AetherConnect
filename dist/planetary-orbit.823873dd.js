@@ -6283,7 +6283,7 @@ setInterval(function () {
   } //add major and minor axis labels
 
 
-  if (voiceover.currentTime > 47 && !scene.getMaterialByName("majorAxisLabel")) {
+  if (voiceover.currentTime > 47 && !scene.getMeshByName("majorAxisLabel")) {
     //add BGUI label with advanced dynamic texture to label major axis
     var majorAxisLabel = BABYLON.Mesh.CreatePlane("majorAxisLabel", 2, scene);
     majorAxisLabel.position = new BABYLON.Vector3(-.3, 0, -12.5);
@@ -6307,17 +6307,59 @@ setInterval(function () {
     minorAxisText.fontSize = 162;
     minorAxisText.fontFamily = 'Roboto';
     minorAxisTexture.addControl(minorAxisText);
-  }
+  } //create focus points
 
-  if (voiceover.currentTime > 90) {
-    //destroy axis labels
+
+  if (voiceover.currentTime > 55 && !scene.getMeshByName("focusPoint")) {
+    var c = 0.41671 * 10; //create focal point
+
+    var focusSphere = new BABYLON.Mesh.CreateSphere("focusPoint", 32, .4, scene);
+    focusSphere.position = new BABYLON.Vector3(0, 0, -2 * c);
+    var focusMat = new BABYLON.StandardMaterial("focusMat", scene);
+    focusMat.emissiveColor = new BABYLON.Color3(.7, .7, .7);
+    focusSphere.material = focusMat;
+  } //destroy focus points
+
+
+  if ((voiceover.currentTime > 70 || voiceover.currentTime < 55) && scene.getMeshByName("focusPoint") != null) {
+    scene.removeMesh(focusSphere);
+    scene.getMeshByName("focusPoint").dispose();
+  } //create perihelion and aphelion labels
+
+
+  if (voiceover.currentTime > 82 && !scene.getMeshByName("perihelionLabel")) {
+    //add BGUI label with advanced dynamic texture to label perihelion
+    var perihelionLabel = BABYLON.Mesh.CreatePlane("perihelionLabel", 2, scene);
+    perihelionLabel.position = new BABYLON.Vector3(0, 0, 7);
+    perihelionLabel.rotate(BABYLON.Axis.X, Math.PI / 2, BABYLON.Space.GLOBAL);
+    perihelionLabel.rotate(BABYLON.Axis.Z, Math.PI / 2, BABYLON.Space.GLOBAL);
+    var perihelionTexture = BGUI.AdvancedDynamicTexture.CreateForMesh(perihelionLabel);
+    var perihelionText = new BGUI.TextBlock();
+    perihelionText.text = "Perihelion";
+    perihelionText.color = "white";
+    perihelionText.fontSize = 162;
+    perihelionText.fontFamily = 'Roboto';
+    perihelionTexture.addControl(perihelionText); //add BGUI label with advanced dynamic texture to label aphelion
+
+    var aphelionLabel = BABYLON.Mesh.CreatePlane("aphelionLabel", 2, scene);
+    aphelionLabel.position = new BABYLON.Vector3(-.025, 0, -15.2);
+    aphelionLabel.rotate(BABYLON.Axis.X, Math.PI / 2, BABYLON.Space.GLOBAL);
+    aphelionLabel.rotate(BABYLON.Axis.Z, Math.PI / 2, BABYLON.Space.GLOBAL);
+    var aphelionTexture = BGUI.AdvancedDynamicTexture.CreateForMesh(aphelionLabel);
+    var aphelionText = new BGUI.TextBlock();
+    aphelionText.text = "Aphelion";
+    aphelionText.color = "white";
+    aphelionText.fontSize = 162;
+    aphelionText.fontFamily = 'Roboto';
+    aphelionTexture.addControl(aphelionText);
+  } //destroy axis labels
+
+
+  if ((voiceover.currentTime > 90 || voiceover.currentTime < 47) && scene.getMeshByName("majorAxisLabel") != null) {
     scene.removeMesh(majorAxisLabel);
     scene.removeMesh(minorAxisLabel);
-
-    if (scene.getMeshByName("majorAxisLabel") != null) {
-      scene.getMeshByName("majorAxisLabel").dispose();
-      scene.getMeshByName("minorAxisLabel").dispose();
-    }
+    scene.getMeshByName("majorAxisLabel").dispose();
+    scene.getMeshByName("minorAxisLabel").dispose();
   } //create the shaded sectors
 
 
@@ -6380,7 +6422,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56813" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "62327" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
