@@ -132,4 +132,21 @@ const orbitPath = function(eccentricity, period, a){
     return track;            
 };
 
-export {rotatePlanet, animOrbit, orbitPath};
+
+/**
+ * Calculates the velocity of a celestial body orbiting the sun using the
+ * Vis-Viva equation.
+ * @param {Number} a - The semi-major axis of the orbit (in kilometers)
+ * @param {Number} distance - The distance from the sun to the orbiting body (in kilometers)
+ * @returns {Number} The velocity of the body in km/s
+**/
+const visViva = function(a, distance) {
+    
+    //1.32747451e20 is GM but divide by 1000^3 to go from m^3 to km^3
+    var vSquared = ((2 / distance) - (1 / a)) * 1.32747451 * Math.pow(10, 11) 
+    
+    return Math.sqrt(vSquared)
+}   
+    
+
+export {rotatePlanet, animOrbit, orbitPath, visViva};

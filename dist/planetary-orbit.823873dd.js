@@ -5652,7 +5652,7 @@ exports.default = exports.gsap = gsapWithCSS;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.orbitPath = exports.animOrbit = exports.rotatePlanet = void 0;
+exports.visViva = exports.orbitPath = exports.animOrbit = exports.rotatePlanet = void 0;
 
 var BABYLON = _interopRequireWildcard(require("babylonjs"));
 
@@ -5790,8 +5790,24 @@ var animOrbit = function animOrbit(planet, eccentricity, period, a, group, scene
   group.addTargetedAnimation(planetOrbitAnim, planet);
   return track;
 };
+/**
+ * Calculates the velocity of a celestial body orbiting the sun using the
+ * Vis-Viva equation.
+ * @param {Number} a - The semi-major axis of the orbit (in kilometers)
+ * @param {Number} distance - The distance from the sun to the orbiting body (in kilometers)
+ * @returns {Number} The velocity of the body in km/s
+**/
+
 
 exports.animOrbit = animOrbit;
+
+var visViva = function visViva(a, distance) {
+  //1.32747451e20 is GM but divide by 1000^3 to go from m^3 to km^3
+  var vSquared = (2 / distance - 1 / a) * 1.32747451 * Math.pow(10, 11);
+  return Math.sqrt(vSquared);
+};
+
+exports.visViva = visViva;
 },{"babylonjs":"../../node_modules/babylonjs/babylon.js"}],"../simulations/planetaryOrbit/planetary-orbit-voiceover.mp3":[function(require,module,exports) {
 module.exports = "/planetary-orbit-voiceover.7c6be195.mp3";
 },{}],"../simAssets/skybox/milkyway/milkyway_px.jpg":[function(require,module,exports) {
@@ -6204,8 +6220,10 @@ engine.runRenderLoop(function () {
 
   if (voiceover.currentTime > 151 && voiceover.currentTime < 450) {
     var velocityVector = scene.getMeshByName("velocityVector");
-    velocityVector.updateFunction(velocityVector, velocityVector.shape, velocityVector.path, 1, scene.getMeshByName("earth").position, velocityVector.velocityVectorDirections[Math.floor(scene.getMeshByName("earth").orbitSegment)]);
-    console.log(velocityVector.path);
+    var earth = scene.getMeshByName("earth"); //get velocity of earth
+
+    var velocity = (0, _planetMovements.visViva)(149600000, earth.position.length() * 14960000);
+    velocityVector.updateFunction(velocityVector, velocityVector.shape, velocityVector.path, velocity / 30, earth.position, velocityVector.velocityVectorDirections[Math.floor(earth.orbitSegment)]);
   }
 });
 window.addEventListener("resize", function () {
@@ -6466,6 +6484,7 @@ setInterval(function () {
     var arrowMat = new BABYLON.StandardMaterial("velocityVectorMat", scene);
     arrowMat.emissiveColor = new BABYLON.Color3(0, 1, 0);
     arrow.material = arrowMat;
+    arrow.renderingGroupId = 3;
 
     var arrowUpdate = function arrowUpdate(arrow, shape, path, scale) {
       var arrowStart = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : path[0];
@@ -6482,7 +6501,6 @@ setInterval(function () {
       path[1] = arrowBodyEnd;
       path[2] = arrowBodyEnd;
       path[3] = arrowHeadEnd;
-      console.log(arrowHeadLength, arrowLength);
       BABYLON.MeshBuilder.ExtrudeShapeCustom("velocityVector", {
         shape: shape,
         path: path,
@@ -6535,7 +6553,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52314" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "64862" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

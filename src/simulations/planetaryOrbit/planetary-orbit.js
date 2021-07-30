@@ -1,7 +1,7 @@
 import * as BABYLON from 'babylonjs'
 import * as BGUI from 'babylonjs-gui'
 import { TweenMax, Power2 } from "gsap"
-import {rotatePlanet, animOrbit, orbitPath} from './planet-movements'
+import {rotatePlanet, animOrbit, orbitPath, visViva} from './planet-movements'
 const earcut = window.earcut
 
 //when browser is loaded, create the scene
@@ -418,11 +418,16 @@ engine.runRenderLoop(function () {
 
     //earth velocity vector
     if (voiceover.currentTime > 151 && voiceover.currentTime < 450){
-        var velocityVector = scene.getMeshByName("velocityVector")
-        velocityVector.updateFunction(velocityVector, velocityVector.shape, velocityVector.path, 1, scene.getMeshByName("earth").position,
-            velocityVector.velocityVectorDirections[Math.floor(scene.getMeshByName("earth").orbitSegment)])
 
-        console.log(velocityVector.path)
+        var velocityVector = scene.getMeshByName("velocityVector")
+        var earth = scene.getMeshByName("earth")
+
+        //get velocity of earth
+        var velocity = visViva(149600000, earth.position.length() * 14960000)
+
+        velocityVector.updateFunction(velocityVector, velocityVector.shape, velocityVector.path, velocity / 30, earth.position,
+            velocityVector.velocityVectorDirections[Math.floor(earth.orbitSegment)])
+
     }
 
 });
@@ -716,6 +721,8 @@ setInterval(function () {
         var arrowMat = new BABYLON.StandardMaterial("velocityVectorMat", scene)
         arrowMat.emissiveColor = new BABYLON.Color3(0, 1, 0)
         arrow.material = arrowMat
+
+        arrow.renderingGroupId = 3
         
         const arrowUpdate = (arrow, shape, path, scale, arrowStart = path[0], direction = path[1].subtract(path[0])) => {
 
@@ -735,8 +742,7 @@ setInterval(function () {
             path[1] = arrowBodyEnd
             path[2] = arrowBodyEnd
             path[3] = arrowHeadEnd
-            
-            console.log(arrowHeadLength, arrowLength)
+        
 
             BABYLON.MeshBuilder.ExtrudeShapeCustom("velocityVector", {shape: shape, path: path, scaleFunction: scaling, instance: arrow} )
         }
