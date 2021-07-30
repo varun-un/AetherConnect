@@ -5851,6 +5851,7 @@ var canvas = document.getElementById('canvas');
 var engine = new BABYLON.Engine(canvas, true);
 var voiceover = new Audio(require('./planetary-orbit-voiceover.mp3'));
 var isPlaying = true;
+var showEarthVelocity = false;
 
 var createScene = function createScene() {
   var scene = new BABYLON.Scene(engine);
@@ -6218,7 +6219,7 @@ engine.runRenderLoop(function () {
 
   scene.render(); //earth velocity vector
 
-  if (voiceover.currentTime > 151 && voiceover.currentTime < 450) {
+  if (showEarthVelocity && scene.getMeshByName("velocityVector") != null) {
     var velocityVector = scene.getMeshByName("velocityVector");
     var earth = scene.getMeshByName("earth"); //get velocity of earth
 
@@ -6351,7 +6352,7 @@ setInterval(function () {
   } //create perihelion and aphelion labels
 
 
-  if (voiceover.currentTime > 82 && !scene.getMeshByName("perihelionLabel")) {
+  if (voiceover.currentTime > 82 && voiceover.currentTime < 226 && !scene.getMeshByName("perihelionLabel")) {
     //add BGUI label with advanced dynamic texture to label perihelion
     var perihelionLabel = BABYLON.Mesh.CreatePlane("perihelionLabel", 2, scene);
     perihelionLabel.position = new BABYLON.Vector3(0, 0, 7);
@@ -6387,7 +6388,7 @@ setInterval(function () {
   } //create the shaded sectors
 
 
-  if (voiceover.currentTime > 90 && voiceover.currentTime < 150 && !scene.getMeshByName("rightSector")) {
+  if (voiceover.currentTime > 90 && voiceover.currentTime < 226 && !scene.getMeshByName("rightSector")) {
     var earthPath = scene.getMeshByName("earth").ellipse;
     var rightSectorPoints = [new BABYLON.Vector2(0, 0)],
         leftSectorPoints = [new BABYLON.Vector2(0, 0)]; //get the points for the right sector under 0
@@ -6419,7 +6420,7 @@ setInterval(function () {
   } //destroy the shaded sectors
 
 
-  if ((voiceover.currentTime > 149 || voiceover.currentTime < 90) && scene.getMeshByName("rightSector") != null) {
+  if ((voiceover.currentTime > 225 || voiceover.currentTime < 90) && scene.getMeshByName("rightSector") != null) {
     scene.removeMesh(rightSector);
     scene.removeMesh(leftSector);
     scene.getMeshByName("rightSector").dispose();
@@ -6427,104 +6428,128 @@ setInterval(function () {
   } //create the velocity vector
 
 
-  if (voiceover.currentTime > 150 && !scene.getMeshByName("velocityVector")) {
-    //create the velocity vector
-    //Shape profile in XY plane
-    var myShape = [];
-    var arrowRadius = 0.06;
-    var n = 45;
-    var deltaAngle = 2 * Math.PI / n;
+  if (voiceover.currentTime > 130 && voiceover.currentTime < 226 && !scene.getMeshByName("velocityVector")) {
+    createVelocityVector();
+  } //destroy the perihelion and aphelion labels
 
-    for (var _i = 0; _i <= n; _i++) {
-      myShape.push(new BABYLON.Vector3(arrowRadius * Math.cos(_i * deltaAngle), arrowRadius * Math.sin(_i * deltaAngle), 0));
+
+  if ((voiceover.currentTime > 225 || voiceover.currentTime < 83) && scene.getMeshByName("perihelionLabel") != null) {
+    scene.removeMesh(scene.getMeshByName("perihelionLabel"));
+    scene.removeMesh(scene.getMeshByName("aphelionLabel"));
+    scene.getMeshByName("perihelionLabel").dispose();
+    scene.getMeshByName("aphelionLabel").dispose();
+  } //destroy the velocity vector
+
+
+  if ((voiceover.currentTime > 225 || voiceover.currentTime < 131) && scene.getMeshByName("velocityVector") != null) {
+    deleteVelocityVector();
+  }
+}, 1000); //function to create the velocity vector for earth
+
+var createVelocityVector = function createVelocityVector() {
+  showEarthVelocity = true; //Shape profile in XY plane
+
+  var myShape = [];
+  var arrowRadius = 0.06;
+  var n = 45;
+  var deltaAngle = 2 * Math.PI / n;
+
+  for (var _i = 0; _i <= n; _i++) {
+    myShape.push(new BABYLON.Vector3(arrowRadius * Math.cos(_i * deltaAngle), arrowRadius * Math.sin(_i * deltaAngle), 0));
+  }
+
+  myShape.push(myShape[0]); //close profile
+  //set arrow size and features
+
+  var arrowHeadLength = .15;
+  var arrowHeadMaxSize = .15;
+  var arrowLength = 3;
+  var arrowBodyLength = arrowLength - arrowHeadLength;
+  var arrowStart = new BABYLON.Vector3(1, 2, 1);
+  var arrowDirection = new BABYLON.Vector3(2, 1, 3);
+  arrowDirection.normalize();
+  var arrowBodyEnd = arrowStart.add(arrowDirection.scale(arrowBodyLength));
+  var arrowHeadEnd = arrowBodyEnd.add(arrowDirection.scale(arrowHeadLength));
+  var myPath = [];
+  myPath.push(arrowStart);
+  myPath.push(arrowBodyEnd);
+  myPath.push(arrowBodyEnd);
+  myPath.push(arrowHeadEnd);
+
+  var scaling = function scaling(index, distance) {
+    switch (index) {
+      case 0:
+      case 1:
+        return 1;
+        break;
+
+      case 2:
+        return arrowHeadMaxSize / arrowRadius;
+        break;
+
+      case 3:
+        return 0;
+        break;
     }
+  };
 
-    myShape.push(myShape[0]); //close profile
-    //set arrow size and features
+  var arrow = BABYLON.MeshBuilder.ExtrudeShapeCustom("velocityVector", {
+    shape: myShape,
+    path: myPath,
+    updatable: true,
+    scaleFunction: scaling,
+    sideOrientation: BABYLON.Mesh.DOUBLESIDE
+  });
+  var arrowMat = new BABYLON.StandardMaterial("velocityVectorMat", scene);
+  arrowMat.emissiveColor = new BABYLON.Color3(0, 1, 0);
+  arrow.material = arrowMat;
+  arrow.renderingGroupId = 3;
 
+  var arrowUpdate = function arrowUpdate(arrow, shape, path, scale) {
+    var arrowStart = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : path[0];
+    var direction = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : path[1].subtract(path[0]);
+    scale *= 3;
     var arrowHeadLength = .15;
-    var arrowHeadMaxSize = .15;
-    var arrowLength = 3;
+    var arrowLength = scale;
     var arrowBodyLength = arrowLength - arrowHeadLength;
-    var arrowStart = new BABYLON.Vector3(1, 2, 1);
-    var arrowDirection = new BABYLON.Vector3(2, 1, 3);
+    var arrowDirection = direction;
     arrowDirection.normalize();
     var arrowBodyEnd = arrowStart.add(arrowDirection.scale(arrowBodyLength));
     var arrowHeadEnd = arrowBodyEnd.add(arrowDirection.scale(arrowHeadLength));
-    var myPath = [];
-    myPath.push(arrowStart);
-    myPath.push(arrowBodyEnd);
-    myPath.push(arrowBodyEnd);
-    myPath.push(arrowHeadEnd);
-
-    var scaling = function scaling(index, distance) {
-      switch (index) {
-        case 0:
-        case 1:
-          return 1;
-          break;
-
-        case 2:
-          return arrowHeadMaxSize / arrowRadius;
-          break;
-
-        case 3:
-          return 0;
-          break;
-      }
-    };
-
-    var arrow = BABYLON.MeshBuilder.ExtrudeShapeCustom("velocityVector", {
-      shape: myShape,
-      path: myPath,
-      updatable: true,
+    path[0] = arrowStart;
+    path[1] = arrowBodyEnd;
+    path[2] = arrowBodyEnd;
+    path[3] = arrowHeadEnd;
+    BABYLON.MeshBuilder.ExtrudeShapeCustom("velocityVector", {
+      shape: shape,
+      path: path,
       scaleFunction: scaling,
-      sideOrientation: BABYLON.Mesh.DOUBLESIDE
+      instance: arrow
     });
-    var arrowMat = new BABYLON.StandardMaterial("velocityVectorMat", scene);
-    arrowMat.emissiveColor = new BABYLON.Color3(0, 1, 0);
-    arrow.material = arrowMat;
-    arrow.renderingGroupId = 3;
-
-    var arrowUpdate = function arrowUpdate(arrow, shape, path, scale) {
-      var arrowStart = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : path[0];
-      var direction = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : path[1].subtract(path[0]);
-      scale *= 3;
-      var arrowHeadLength = .15;
-      var arrowLength = scale;
-      var arrowBodyLength = arrowLength - arrowHeadLength;
-      var arrowDirection = direction;
-      arrowDirection.normalize();
-      var arrowBodyEnd = arrowStart.add(arrowDirection.scale(arrowBodyLength));
-      var arrowHeadEnd = arrowBodyEnd.add(arrowDirection.scale(arrowHeadLength));
-      path[0] = arrowStart;
-      path[1] = arrowBodyEnd;
-      path[2] = arrowBodyEnd;
-      path[3] = arrowHeadEnd;
-      BABYLON.MeshBuilder.ExtrudeShapeCustom("velocityVector", {
-        shape: shape,
-        path: path,
-        scaleFunction: scaling,
-        instance: arrow
-      });
-    }; //save important properties of the arrow
+  }; //save important properties of the arrow
 
 
-    arrow.shape = myShape;
-    arrow.path = myPath;
-    arrow.updateFunction = arrowUpdate;
-    var earthPath = scene.getMeshByName("earth").ellipse; //create the array of velocity vector directions
+  arrow.shape = myShape;
+  arrow.path = myPath;
+  arrow.updateFunction = arrowUpdate;
+  var earthPath = scene.getMeshByName("earth").ellipse; //create the array of velocity vector directions
 
-    var velocityVectorDirections = [new BABYLON.Vector3(-1, 0, 0)];
+  var velocityVectorDirections = [new BABYLON.Vector3(-1, 0, 0)];
 
-    for (var i = 0; i < earthPath.length - 1; i++) {
-      velocityVectorDirections.push(earthPath[i + 1].subtract(earthPath[i]));
-    } //save this as a property of the velocity vector
+  for (var i = 0; i < earthPath.length - 1; i++) {
+    velocityVectorDirections.push(earthPath[i + 1].subtract(earthPath[i]));
+  } //save this as a property of the velocity vector
 
 
-    arrow.velocityVectorDirections = velocityVectorDirections;
-  }
-}, 1000);
+  arrow.velocityVectorDirections = velocityVectorDirections;
+}; //function to delete the velocity vector for earth
+
+
+var deleteVelocityVector = function deleteVelocityVector() {
+  showEarthVelocity = false;
+  scene.removeMesh(scene.getMeshByName("velocityVector"));
+  scene.getMeshByName("velocityVector").dispose();
+};
 },{"babylonjs":"../../node_modules/babylonjs/babylon.js","babylonjs-gui":"../../node_modules/babylonjs-gui/babylon.gui.min.js","gsap":"../../node_modules/gsap/index.js","./planet-movements":"../simulations/planetaryOrbit/planet-movements.js","./planetary-orbit-voiceover.mp3":"../simulations/planetaryOrbit/planetary-orbit-voiceover.mp3","../../simAssets/skybox/milkyway/milkyway_px.jpg":"../simAssets/skybox/milkyway/milkyway_px.jpg","../../simAssets/skybox/milkyway/milkyway_py.jpg":"../simAssets/skybox/milkyway/milkyway_py.jpg","../../simAssets/skybox/milkyway/milkyway_pz.jpg":"../simAssets/skybox/milkyway/milkyway_pz.jpg","../../simAssets/skybox/milkyway/milkyway_nx.jpg":"../simAssets/skybox/milkyway/milkyway_nx.jpg","../../simAssets/skybox/milkyway/milkyway_ny.jpg":"../simAssets/skybox/milkyway/milkyway_ny.jpg","../../simAssets/skybox/milkyway/milkyway_nz.jpg":"../simAssets/skybox/milkyway/milkyway_nz.jpg","../../simAssets/earthTextures/2k-earth-daymap.jpg":"../simAssets/earthTextures/2k-earth-daymap.jpg","../../simAssets/earthTextures/2k-earth-normal.jpg":"../simAssets/earthTextures/2k-earth-normal.jpg","../../simAssets/audioIcons/play button.png":"../simAssets/audioIcons/play button.png","../../simAssets/audioIcons/pause button.png":"../simAssets/audioIcons/pause button.png"}],"../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -6553,7 +6578,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "64862" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "65465" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

@@ -9,6 +9,7 @@ var canvas = document.getElementById('canvas')
 var engine = new BABYLON.Engine(canvas, true)
 var voiceover = new Audio(require('./planetary-orbit-voiceover.mp3'))
 var isPlaying = true
+var showEarthVelocity = false
 
 var createScene = function () {
     var scene = new BABYLON.Scene(engine)
@@ -417,7 +418,7 @@ engine.runRenderLoop(function () {
     scene.render()
 
     //earth velocity vector
-    if (voiceover.currentTime > 151 && voiceover.currentTime < 450){
+    if (showEarthVelocity && scene.getMeshByName("velocityVector") != null){
 
         var velocityVector = scene.getMeshByName("velocityVector")
         var earth = scene.getMeshByName("earth")
@@ -585,7 +586,7 @@ setInterval(function () {
     }
 
     //create perihelion and aphelion labels
-    if (voiceover.currentTime > 82 && !(scene.getMeshByName("perihelionLabel"))) {
+    if (voiceover.currentTime > 82 && voiceover.currentTime < 226 && !(scene.getMeshByName("perihelionLabel"))) {
 
         //add BGUI label with advanced dynamic texture to label perihelion
         var perihelionLabel = BABYLON.Mesh.CreatePlane("perihelionLabel", 2, scene);
@@ -625,7 +626,7 @@ setInterval(function () {
     }
 
     //create the shaded sectors
-    if(voiceover.currentTime > 90 && voiceover.currentTime < 150 && !(scene.getMeshByName("rightSector"))) {
+    if(voiceover.currentTime > 90 && voiceover.currentTime < 226 && !(scene.getMeshByName("rightSector"))) {
 
         var earthPath = scene.getMeshByName("earth").ellipse
         var rightSectorPoints = [new BABYLON.Vector2(0, 0)], leftSectorPoints = [new BABYLON.Vector2(0, 0)]
@@ -660,7 +661,7 @@ setInterval(function () {
     }
 
     //destroy the shaded sectors
-    if ((voiceover.currentTime > 149 || voiceover.currentTime < 90) && scene.getMeshByName("rightSector") != null) {
+    if ((voiceover.currentTime > 225 || voiceover.currentTime < 90) && scene.getMeshByName("rightSector") != null) {
         scene.removeMesh(rightSector)
         scene.removeMesh(leftSector)
 
@@ -669,103 +670,136 @@ setInterval(function () {
     }
 
     //create the velocity vector
-    if(voiceover.currentTime > 150 && !(scene.getMeshByName("velocityVector"))) {
+    if(voiceover.currentTime > 130 && voiceover.currentTime < 226 && !(scene.getMeshByName("velocityVector"))) {
 
-        //create the velocity vector
-        //Shape profile in XY plane
-        const myShape = []
-        const arrowRadius = 0.06
-        var n = 45
-        var deltaAngle = 2 * Math.PI / n
-        for (let i = 0; i <= n; i++) {
-            myShape.push(new BABYLON.Vector3(arrowRadius * Math.cos(i * deltaAngle), arrowRadius * Math.sin(i * deltaAngle), 0))
+        createVelocityVector()
 
-        }
-        myShape.push(myShape[0])  //close profile
+    }
 
-        //set arrow size and features
-        const arrowHeadLength = .15
-        const arrowHeadMaxSize = .15            
-        const arrowLength = 3
-        const arrowBodyLength = arrowLength - arrowHeadLength
-        const arrowStart = new BABYLON.Vector3(1, 2, 1)
-        let arrowDirection = new BABYLON.Vector3(2, 1, 3)
-        arrowDirection.normalize()
-
-        const arrowBodyEnd = arrowStart.add(arrowDirection.scale(arrowBodyLength))
-        const arrowHeadEnd = arrowBodyEnd.add(arrowDirection.scale(arrowHeadLength))
+    //destroy the perihelion and aphelion labels
+    if ((voiceover.currentTime > 225 || voiceover.currentTime < 83) && scene.getMeshByName("perihelionLabel") != null) {
         
-        const myPath = []
-        myPath.push(arrowStart)
-        myPath.push(arrowBodyEnd)
-        myPath.push(arrowBodyEnd)
-        myPath.push(arrowHeadEnd)
-        
-        const scaling = (index, distance) => {
-            switch (index) {
-                case 0:
-                case 1:
-                    return 1
-                break
-                case 2:
-                    return arrowHeadMaxSize / arrowRadius
-                break
-                case 3:
-                    return 0
-                break
-            }
-        };
+        scene.removeMesh(scene.getMeshByName("perihelionLabel"))
+        scene.removeMesh(scene.getMeshByName("aphelionLabel"))
 
-        let arrow = BABYLON.MeshBuilder.ExtrudeShapeCustom("velocityVector", {shape: myShape, path: myPath, updatable: true, 
-            scaleFunction: scaling, sideOrientation: BABYLON.Mesh.DOUBLESIDE})
-        var arrowMat = new BABYLON.StandardMaterial("velocityVectorMat", scene)
-        arrowMat.emissiveColor = new BABYLON.Color3(0, 1, 0)
-        arrow.material = arrowMat
+        scene.getMeshByName("perihelionLabel").dispose()
+        scene.getMeshByName("aphelionLabel").dispose()
+    }
 
-        arrow.renderingGroupId = 3
-        
-        const arrowUpdate = (arrow, shape, path, scale, arrowStart = path[0], direction = path[1].subtract(path[0])) => {
+    //destroy the velocity vector
+    if ((voiceover.currentTime > 225 || voiceover.currentTime < 131) && scene.getMeshByName("velocityVector") != null) {
 
-            scale *= 3
-
-            const arrowHeadLength = .15
-            const arrowLength = scale
-            const arrowBodyLength = arrowLength - arrowHeadLength
-            
-            let arrowDirection = direction
-            arrowDirection.normalize()
-            
-            const arrowBodyEnd = arrowStart.add(arrowDirection.scale(arrowBodyLength))
-            const arrowHeadEnd = arrowBodyEnd.add(arrowDirection.scale(arrowHeadLength))
-            
-            path[0] = arrowStart
-            path[1] = arrowBodyEnd
-            path[2] = arrowBodyEnd
-            path[3] = arrowHeadEnd
-        
-
-            BABYLON.MeshBuilder.ExtrudeShapeCustom("velocityVector", {shape: shape, path: path, scaleFunction: scaling, instance: arrow} )
-        }
-
-        //save important properties of the arrow
-        arrow.shape = myShape
-        arrow.path = myPath
-        arrow.updateFunction = arrowUpdate
-
-        
-        var earthPath = scene.getMeshByName("earth").ellipse
-
-        //create the array of velocity vector directions
-        var velocityVectorDirections = [new BABYLON.Vector3(-1, 0, 0)]
-
-        for (var i = 0; i < earthPath.length - 1; i++) {
-            velocityVectorDirections.push(earthPath[i + 1].subtract(earthPath[i]))
-        }
-
-        //save this as a property of the velocity vector
-        arrow.velocityVectorDirections = velocityVectorDirections
+        deleteVelocityVector()
 
     }
 
 
 }, 1000)
+
+//function to create the velocity vector for earth
+const createVelocityVector = () => {
+
+    showEarthVelocity = true
+
+    //Shape profile in XY plane
+    const myShape = []
+    const arrowRadius = 0.06
+    var n = 45
+    var deltaAngle = 2 * Math.PI / n
+    for (let i = 0; i <= n; i++) {
+        myShape.push(new BABYLON.Vector3(arrowRadius * Math.cos(i * deltaAngle), arrowRadius * Math.sin(i * deltaAngle), 0))
+
+    }
+    myShape.push(myShape[0])  //close profile
+
+    //set arrow size and features
+    const arrowHeadLength = .15
+    const arrowHeadMaxSize = .15            
+    const arrowLength = 3
+    const arrowBodyLength = arrowLength - arrowHeadLength
+    const arrowStart = new BABYLON.Vector3(1, 2, 1)
+    let arrowDirection = new BABYLON.Vector3(2, 1, 3)
+    arrowDirection.normalize()
+
+    const arrowBodyEnd = arrowStart.add(arrowDirection.scale(arrowBodyLength))
+    const arrowHeadEnd = arrowBodyEnd.add(arrowDirection.scale(arrowHeadLength))
+    
+    const myPath = []
+    myPath.push(arrowStart)
+    myPath.push(arrowBodyEnd)
+    myPath.push(arrowBodyEnd)
+    myPath.push(arrowHeadEnd)
+    
+    const scaling = (index, distance) => {
+        switch (index) {
+            case 0:
+            case 1:
+                return 1
+            break
+            case 2:
+                return arrowHeadMaxSize / arrowRadius
+            break
+            case 3:
+                return 0
+            break
+        }
+    };
+
+    let arrow = BABYLON.MeshBuilder.ExtrudeShapeCustom("velocityVector", {shape: myShape, path: myPath, updatable: true, 
+        scaleFunction: scaling, sideOrientation: BABYLON.Mesh.DOUBLESIDE})
+    var arrowMat = new BABYLON.StandardMaterial("velocityVectorMat", scene)
+    arrowMat.emissiveColor = new BABYLON.Color3(0, 1, 0)
+    arrow.material = arrowMat
+
+    arrow.renderingGroupId = 3
+    
+    const arrowUpdate = (arrow, shape, path, scale, arrowStart = path[0], direction = path[1].subtract(path[0])) => {
+
+        scale *= 3
+
+        const arrowHeadLength = .15
+        const arrowLength = scale
+        const arrowBodyLength = arrowLength - arrowHeadLength
+        
+        let arrowDirection = direction
+        arrowDirection.normalize()
+        
+        const arrowBodyEnd = arrowStart.add(arrowDirection.scale(arrowBodyLength))
+        const arrowHeadEnd = arrowBodyEnd.add(arrowDirection.scale(arrowHeadLength))
+        
+        path[0] = arrowStart
+        path[1] = arrowBodyEnd
+        path[2] = arrowBodyEnd
+        path[3] = arrowHeadEnd
+    
+
+        BABYLON.MeshBuilder.ExtrudeShapeCustom("velocityVector", {shape: shape, path: path, scaleFunction: scaling, instance: arrow} )
+    }
+
+    //save important properties of the arrow
+    arrow.shape = myShape
+    arrow.path = myPath
+    arrow.updateFunction = arrowUpdate
+
+    
+    var earthPath = scene.getMeshByName("earth").ellipse
+
+    //create the array of velocity vector directions
+    var velocityVectorDirections = [new BABYLON.Vector3(-1, 0, 0)]
+
+    for (var i = 0; i < earthPath.length - 1; i++) {
+        velocityVectorDirections.push(earthPath[i + 1].subtract(earthPath[i]))
+    }
+
+    //save this as a property of the velocity vector
+    arrow.velocityVectorDirections = velocityVectorDirections
+}
+
+//function to delete the velocity vector for earth
+const deleteVelocityVector = () => {
+
+    showEarthVelocity = false
+
+    scene.removeMesh(scene.getMeshByName("velocityVector"))
+    scene.getMeshByName("velocityVector").dispose()
+}
