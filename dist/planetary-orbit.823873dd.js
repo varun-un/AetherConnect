@@ -5852,6 +5852,7 @@ var engine = new BABYLON.Engine(canvas, true);
 var voiceover = new Audio(require('./planetary-orbit-voiceover.mp3'));
 var isPlaying = true;
 var showEarthVelocity = false;
+var checkbox;
 
 var createScene = function createScene() {
   var scene = new BABYLON.Scene(engine);
@@ -5960,7 +5961,7 @@ var createScene = function createScene() {
   var earthTrack = (0, _planetMovements.animOrbit)(earth, 0.41671, 365, 10, orbitAnims, scene);
   orbitAnims.normalize();
   orbitAnims.play(true); //----------------------------GUI-------------------------------
-  //create Babylon GUI for speed controls in top left
+  //create Babylon GUI for controls at top of screen
 
   var advancedTexture = BGUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
   advancedTexture.layer.layerMask = 2;
@@ -6014,7 +6015,7 @@ var createScene = function createScene() {
   slider.horizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
   slider.minimum = 0;
   slider.maximum = 730;
-  slider.color = "orange";
+  slider.color = "#FF8400";
   slider.background = "#050505";
   slider.value = 1;
   slider.height = "20px";
@@ -6029,7 +6030,38 @@ var createScene = function createScene() {
       rotationAnims.speedRatio = 40;
     }
   });
-  panel.addControl(slider); //-----------------Dragging Controls---------------
+  panel.addControl(slider); //stack panel for velocity vector checkbox
+
+  var velocityPanel = new BGUI.StackPanel();
+  velocityPanel.width = "140px";
+  velocityPanel.height = "60px";
+  velocityPanel.isVertical = false;
+  velocityPanel.horizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+  velocityPanel.verticalAlignment = BGUI.Control.VERTICAL_ALIGNMENT_TOP;
+  advancedTexture.addControl(velocityPanel);
+  checkbox = new BGUI.Checkbox();
+  checkbox.width = "20px";
+  checkbox.height = "20px";
+  checkbox.isChecked = false;
+  checkbox.color = "orange";
+  checkbox.background = "#050505";
+  checkbox.onIsCheckedChangedObservable.add(function (value) {
+    if (showEarthVelocity) {
+      deleteVelocityVector();
+    } else {
+      createVelocityVector();
+    }
+  });
+  var velocityHeader = new BGUI.TextBlock();
+  velocityHeader.text = "show velocity";
+  velocityHeader.width = "103px";
+  velocityHeader.marginLeft = "5px";
+  velocityHeader.fontSize = 16;
+  velocityHeader.fontFamily = "Roboto";
+  velocityHeader.textHorizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+  velocityHeader.color = "white";
+  velocityPanel.addControl(velocityHeader);
+  velocityPanel.addControl(checkbox); //-----------------Dragging Controls---------------
   //Plane on xz axis for projection of mouse rays when dragging
 
   var orbitPlane = BABYLON.MeshBuilder.CreateGround("orbitPlane", {
@@ -6438,16 +6470,12 @@ setInterval(function () {
     scene.removeMesh(scene.getMeshByName("aphelionLabel"));
     scene.getMeshByName("perihelionLabel").dispose();
     scene.getMeshByName("aphelionLabel").dispose();
-  } //destroy the velocity vector
-
-
-  if ((voiceover.currentTime > 225 || voiceover.currentTime < 131) && scene.getMeshByName("velocityVector") != null) {
-    deleteVelocityVector();
   }
 }, 1000); //function to create the velocity vector for earth
 
 var createVelocityVector = function createVelocityVector() {
-  showEarthVelocity = true; //Shape profile in XY plane
+  showEarthVelocity = true;
+  checkbox.isChecked = true; //Shape profile in XY plane
 
   var myShape = [];
   var arrowRadius = 0.06;
@@ -6465,8 +6493,8 @@ var createVelocityVector = function createVelocityVector() {
   var arrowHeadMaxSize = .15;
   var arrowLength = 3;
   var arrowBodyLength = arrowLength - arrowHeadLength;
-  var arrowStart = new BABYLON.Vector3(1, 2, 1);
-  var arrowDirection = new BABYLON.Vector3(2, 1, 3);
+  var arrowStart = scene.getMeshByName("earth").position.clone();
+  var arrowDirection = new BABYLON.Vector3(-1 * arrowStart.z, 0, arrowStart.x);
   arrowDirection.normalize();
   var arrowBodyEnd = arrowStart.add(arrowDirection.scale(arrowBodyLength));
   var arrowHeadEnd = arrowBodyEnd.add(arrowDirection.scale(arrowHeadLength));
@@ -6578,7 +6606,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "65465" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53296" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
