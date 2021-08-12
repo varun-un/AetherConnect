@@ -5851,8 +5851,10 @@ var canvas = document.getElementById('canvas');
 var engine = new BABYLON.Engine(canvas, true);
 var voiceover = new Audio(require('./planetary-orbit-voiceover.mp3'));
 var isPlaying = true;
-var showEarthVelocity = false;
+var showEarthVelocity = false,
+    eccentricitySliderShowing = false;
 var checkbox;
+var advancedTexture; //the BABYLON.GUI texture
 
 var createScene = function createScene() {
   var scene = new BABYLON.Scene(engine);
@@ -5963,15 +5965,15 @@ var createScene = function createScene() {
   orbitAnims.play(true); //----------------------------GUI-------------------------------
   //create Babylon GUI for controls at top of screen
 
-  var advancedTexture = BGUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+  advancedTexture = BGUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
   advancedTexture.layer.layerMask = 2;
   advancedTexture.renderScale = 1; //speed control stack panel
 
-  var panel = new BGUI.StackPanel();
-  panel.width = window.innerWidth / 3 + "px";
-  panel.horizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-  panel.verticalAlignment = BGUI.Control.VERTICAL_ALIGNMENT_TOP;
-  advancedTexture.addControl(panel); //converts the slider's value into a readable string
+  var speedPanel = new BGUI.StackPanel();
+  speedPanel.width = window.innerWidth / 3 + "px";
+  speedPanel.horizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+  speedPanel.verticalAlignment = BGUI.Control.VERTICAL_ALIGNMENT_TOP;
+  advancedTexture.addControl(speedPanel); //converts the slider's value into a readable string
 
   var speedString = function speedString(sliderValue) {
     if (sliderValue === 0) {
@@ -6000,28 +6002,28 @@ var createScene = function createScene() {
   }; //text for and slider for the speed
 
 
-  var header = new BGUI.TextBlock();
-  header.text = speedString(1);
-  header.height = "40px";
-  header.widthInPixels = panel.widthInPixels;
-  header.color = "white";
-  header.fontSize = 16;
-  header.fontFamily = 'Roboto';
-  header.fontStyle = 'Light 100';
-  header.textHorizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-  header.marginTop = "10px";
-  panel.addControl(header);
-  var slider = new BGUI.Slider();
-  slider.horizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-  slider.minimum = 0;
-  slider.maximum = 730;
-  slider.color = "#FF8400";
-  slider.background = "#050505";
-  slider.value = 1;
-  slider.height = "20px";
-  slider.width = window.innerWidth / 3 - 50 + "px";
-  slider.onValueChangedObservable.add(function (value) {
-    header.text = speedString(value);
+  var speedHeader = new BGUI.TextBlock();
+  speedHeader.text = speedString(1);
+  speedHeader.height = "40px";
+  speedHeader.widthInPixels = speedPanel.widthInPixels;
+  speedHeader.color = "white";
+  speedHeader.fontSize = 16;
+  speedHeader.fontFamily = 'Roboto';
+  speedHeader.fontStyle = 'Light 100';
+  speedHeader.textHorizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+  speedHeader.marginTop = "10px";
+  speedPanel.addControl(speedHeader);
+  var speedSlider = new BGUI.Slider();
+  speedSlider.horizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+  speedSlider.minimum = 0;
+  speedSlider.maximum = 730;
+  speedSlider.color = "#FF8400";
+  speedSlider.background = "#050505";
+  speedSlider.value = 1;
+  speedSlider.height = "20px";
+  speedSlider.width = window.innerWidth / 3 - 50 + "px";
+  speedSlider.onValueChangedObservable.add(function (value) {
+    speedHeader.text = speedString(value);
     orbitAnims.speedRatio = value; //cap the rotation speed at 20pi radians/sec
 
     if (value <= 40) {
@@ -6030,7 +6032,7 @@ var createScene = function createScene() {
       rotationAnims.speedRatio = 40;
     }
   });
-  panel.addControl(slider); //stack panel for velocity vector checkbox
+  speedPanel.addControl(speedSlider); //stack panel for velocity vector checkbox
 
   var velocityPanel = new BGUI.StackPanel();
   velocityPanel.width = "140px";
@@ -6175,16 +6177,7 @@ var createScene = function createScene() {
         pointerMove();
         break;
     }
-  }); // change eccentricity
-  // var e = 0.01671;
-  // setInterval(function(){
-  //     e += .005;
-  //     var path = orbitPath(e, 365, 10);
-  //     earthTrack = BABYLON.Mesh.CreateLines(null, path, null, null, earthTrack);
-  //     earth.ellipse = path;
-  //     console.log(path);
-  // }, 2000);
-  //--------------Debugging Axis----------------
+  }); //--------------Debugging Axis----------------
 
   function showWorldAxis(size) {
     var makeTextPlane = function makeTextPlane(text, color, size) {
@@ -6471,6 +6464,47 @@ setInterval(function () {
     scene.getMeshByName("perihelionLabel").dispose();
     scene.getMeshByName("aphelionLabel").dispose();
   }
+
+  if (voiceover.currentTime > 83 && !eccentricitySliderShowing) {
+    eccentricitySliderShowing = true; //eccentricity control stack panel
+
+    var eccentricityPanel = new BGUI.StackPanel();
+    eccentricityPanel.width = window.innerWidth / 3 + "px";
+    eccentricityPanel.horizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+    eccentricityPanel.verticalAlignment = BGUI.Control.VERTICAL_ALIGNMENT_TOP;
+    advancedTexture.addControl(eccentricityPanel); //text for and slider for the speed
+
+    var eccentricityHeader = new BGUI.TextBlock();
+    eccentricityHeader.text = "Earth's eccentricity: 0.41671";
+    eccentricityHeader.height = "40px";
+    eccentricityHeader.widthInPixels = eccentricityPanel.widthInPixels;
+    eccentricityHeader.color = "white";
+    eccentricityHeader.fontSize = 16;
+    eccentricityHeader.fontFamily = 'Roboto';
+    eccentricityHeader.fontStyle = 'Light 100';
+    eccentricityHeader.textHorizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+    eccentricityHeader.marginTop = "10px";
+    eccentricityPanel.addControl(eccentricityHeader);
+    var eccentricitySlider = new BGUI.Slider();
+    eccentricitySlider.horizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+    eccentricitySlider.minimum = 0;
+    eccentricitySlider.maximum = .75;
+    eccentricitySlider.color = "#888888";
+    eccentricitySlider.background = "#050505";
+    eccentricitySlider.value = 0.41671;
+    eccentricitySlider.height = "20px";
+    eccentricitySlider.width = window.innerWidth / 3 - 50 + "px";
+    eccentricitySlider.onValueChangedObservable.add(function (value) {
+      eccentricityHeader.text = "Earth's eccentricity: " + Math.round(eccentricitySlider.value * 10000) / 10000;
+      var earthTrack = scene.getMeshByName('earthTrack');
+      var earth = scene.getMeshByName('earth'); //change eccentricity
+
+      var path = (0, _planetMovements.orbitPath)(value, 365, 10);
+      earthTrack = BABYLON.Mesh.CreateLines(null, path, null, null, earthTrack);
+      earth.ellipse = path;
+    });
+    eccentricityPanel.addControl(eccentricitySlider);
+  }
 }, 1000); //function to create the velocity vector for earth
 
 var createVelocityVector = function createVelocityVector() {
@@ -6576,7 +6610,10 @@ var createVelocityVector = function createVelocityVector() {
 var deleteVelocityVector = function deleteVelocityVector() {
   showEarthVelocity = false;
   scene.removeMesh(scene.getMeshByName("velocityVector"));
-  scene.getMeshByName("velocityVector").dispose();
+
+  if (scene.getMeshByName("velocityVector")) {
+    scene.getMeshByName("velocityVector").dispose();
+  }
 };
 },{"babylonjs":"../../node_modules/babylonjs/babylon.js","babylonjs-gui":"../../node_modules/babylonjs-gui/babylon.gui.min.js","gsap":"../../node_modules/gsap/index.js","./planet-movements":"../simulations/planetaryOrbit/planet-movements.js","./planetary-orbit-voiceover.mp3":"../simulations/planetaryOrbit/planetary-orbit-voiceover.mp3","../../simAssets/skybox/milkyway/milkyway_px.jpg":"../simAssets/skybox/milkyway/milkyway_px.jpg","../../simAssets/skybox/milkyway/milkyway_py.jpg":"../simAssets/skybox/milkyway/milkyway_py.jpg","../../simAssets/skybox/milkyway/milkyway_pz.jpg":"../simAssets/skybox/milkyway/milkyway_pz.jpg","../../simAssets/skybox/milkyway/milkyway_nx.jpg":"../simAssets/skybox/milkyway/milkyway_nx.jpg","../../simAssets/skybox/milkyway/milkyway_ny.jpg":"../simAssets/skybox/milkyway/milkyway_ny.jpg","../../simAssets/skybox/milkyway/milkyway_nz.jpg":"../simAssets/skybox/milkyway/milkyway_nz.jpg","../../simAssets/earthTextures/2k-earth-daymap.jpg":"../simAssets/earthTextures/2k-earth-daymap.jpg","../../simAssets/earthTextures/2k-earth-normal.jpg":"../simAssets/earthTextures/2k-earth-normal.jpg","../../simAssets/audioIcons/play button.png":"../simAssets/audioIcons/play button.png","../../simAssets/audioIcons/pause button.png":"../simAssets/audioIcons/pause button.png"}],"../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
@@ -6606,7 +6643,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53296" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49635" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
