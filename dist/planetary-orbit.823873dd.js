@@ -5853,8 +5853,9 @@ var voiceover = new Audio(require('./planetary-orbit-voiceover.mp3'));
 var isPlaying = true;
 var showEarthVelocity = false,
     eccentricitySliderShowing = false;
-var checkbox;
-var advancedTexture; //the BABYLON.GUI texture
+var checkbox; //Babylon GUI stuff
+
+var advancedTexture, eccentricitySlider;
 
 var createScene = function createScene() {
   var scene = new BABYLON.Scene(engine);
@@ -6450,11 +6451,6 @@ setInterval(function () {
     scene.removeMesh(leftSector);
     scene.getMeshByName("rightSector").dispose();
     scene.getMeshByName("leftSector").dispose();
-  } //create the velocity vector
-
-
-  if (voiceover.currentTime > 130 && voiceover.currentTime < 226 && !scene.getMeshByName("velocityVector")) {
-    createVelocityVector();
   } //destroy the perihelion and aphelion labels
 
 
@@ -6463,9 +6459,10 @@ setInterval(function () {
     scene.removeMesh(scene.getMeshByName("aphelionLabel"));
     scene.getMeshByName("perihelionLabel").dispose();
     scene.getMeshByName("aphelionLabel").dispose();
-  }
+  } //show eccentricity control slider
 
-  if (voiceover.currentTime > 83 && !eccentricitySliderShowing) {
+
+  if (voiceover.currentTime > 245 && !eccentricitySliderShowing) {
     eccentricitySliderShowing = true; //eccentricity control stack panel
 
     var eccentricityPanel = new BGUI.StackPanel();
@@ -6485,7 +6482,7 @@ setInterval(function () {
     eccentricityHeader.textHorizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
     eccentricityHeader.marginTop = "10px";
     eccentricityPanel.addControl(eccentricityHeader);
-    var eccentricitySlider = new BGUI.Slider();
+    eccentricitySlider = new BGUI.Slider();
     eccentricitySlider.horizontalAlignment = BGUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
     eccentricitySlider.minimum = 0;
     eccentricitySlider.maximum = .75;
@@ -6501,9 +6498,38 @@ setInterval(function () {
 
       var path = (0, _planetMovements.orbitPath)(value, 365, 10);
       earthTrack = BABYLON.Mesh.CreateLines(null, path, null, null, earthTrack);
-      earth.ellipse = path;
+      earth.ellipse = path; //if velocity vector is showing, update it's path
+
+      if (checkbox.isChecked) {
+        deleteVelocityVector();
+        createVelocityVector();
+      }
     });
     eccentricityPanel.addControl(eccentricitySlider);
+  } //change eccentricity to that of Earth
+
+
+  if (Math.floor(voiceover.currentTime) == 299) {
+    //gradually change the eccentricity slider to equal 0.0167 over ~one second
+    var i = 0;
+    var delta = (0.0167 - eccentricitySlider.value) / 10;
+    delta = Math.round(delta * 100000) / 100000; //error
+
+    console.log(delta, delta * 10, eccentricitySlider.value + delta * 10);
+    var eccInterval = setInterval(function () {
+      if (eccentricitySlider.value == 0.0167 || i >= 10) {
+        console.log(eccentricitySlider.value);
+        clearInterval(eccInterval);
+        delta = 0;
+      }
+
+      eccentricitySlider.value += delta;
+      i++;
+    }, 75);
+  }
+
+  if (Math.floor(voiceover.currentTime) == 301) {
+    console.log(eccentricitySlider.value);
   }
 }, 1000); //function to create the velocity vector for earth
 
@@ -6643,7 +6669,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49635" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59977" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
