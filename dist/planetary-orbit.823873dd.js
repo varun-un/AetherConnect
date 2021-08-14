@@ -5824,12 +5824,24 @@ module.exports = "/milkyway_ny.4446324c.jpg";
 module.exports = "/milkyway_nz.3bf41353.jpg";
 },{}],"../simAssets/earthTextures/2k-earth-daymap.jpg":[function(require,module,exports) {
 module.exports = "/2k-earth-daymap.6eefe9bb.jpg";
-},{}],"../simAssets/earthTextures/2k-earth-normal.jpg":[function(require,module,exports) {
-module.exports = "/2k-earth-normal.5ec4f2a6.jpg";
 },{}],"../simAssets/audioIcons/play button.png":[function(require,module,exports) {
 module.exports = "/play button.34662927.png";
 },{}],"../simAssets/audioIcons/pause button.png":[function(require,module,exports) {
 module.exports = "/pause button.2516064b.png";
+},{}],"../simulations/planetaryOrbit/planetTextures/2k_mercury.jpg":[function(require,module,exports) {
+module.exports = "/2k_mercury.f3b419cd.jpg";
+},{}],"../simulations/planetaryOrbit/planetTextures/2k_venus.jpg":[function(require,module,exports) {
+module.exports = "/2k_venus.9aeba980.jpg";
+},{}],"../simulations/planetaryOrbit/planetTextures/2k_mars.jpg":[function(require,module,exports) {
+module.exports = "/2k_mars.2a103160.jpg";
+},{}],"../simulations/planetaryOrbit/planetTextures/2k_jupiter.jpg":[function(require,module,exports) {
+module.exports = "/2k_jupiter.2c62d942.jpg";
+},{}],"../simulations/planetaryOrbit/planetTextures/2k_saturn.jpg":[function(require,module,exports) {
+module.exports = "/2k_saturn.caa6d23f.jpg";
+},{}],"../simulations/planetaryOrbit/planetTextures/2k_uranus.jpg":[function(require,module,exports) {
+module.exports = "/2k_uranus.9f8c01bc.jpg";
+},{}],"../simulations/planetaryOrbit/planetTextures/2k_neptune.jpg":[function(require,module,exports) {
+module.exports = "/2k_neptune.1a940f2d.jpg";
 },{}],"../simulations/planetaryOrbit/planetary-orbit.js":[function(require,module,exports) {
 "use strict";
 
@@ -5853,7 +5865,8 @@ var voiceover = new Audio(require('./planetary-orbit-voiceover.mp3'));
 var isPlaying = true;
 var showEarthVelocity = false,
     eccentricitySliderShowing = false;
-var checkbox; //Babylon GUI stuff
+var checkbox;
+var rotationAnims, orbitAnims; //Babylon GUI stuff
 
 var advancedTexture, eccentricitySlider;
 
@@ -5915,7 +5928,7 @@ var createScene = function createScene() {
   }).catch(function (issue) {
     return console.error(issue);
   });
-  var sun = BABYLON.Mesh.CreateSphere("pseudoSun", 32, 4.1, scene); //create Earth
+  var sun = BABYLON.Mesh.CreateSphere("pseudoSun", 32, 4.5, scene); //create Earth
 
   var earth = BABYLON.Mesh.CreateSphere("earth", 32, .5, scene);
   earth.position.z = 10;
@@ -5924,19 +5937,17 @@ var createScene = function createScene() {
 
   var earthMat = new BABYLON.StandardMaterial("earth-material", scene);
   earthMat.diffuseTexture = new BABYLON.Texture(require("../../simAssets/earthTextures/2k-earth-daymap.jpg"), scene);
-  earthMat.bumpTexture = new BABYLON.Texture(require("../../simAssets/earthTextures/2k-earth-normal.jpg"), scene);
-  earthMat.bumpTexture.level = 8;
   earthMat.specularColor = new BABYLON.Color3(0, 0, 0);
   earth.material = earthMat;
   var sunlight = new BABYLON.PointLight("sunlight", new BABYLON.Vector3(0, 0, 0), scene);
-  sunlight.intensity = 1.5; //environment lighting
-
-  var downLight = new BABYLON.HemisphericLight("downlight", new BABYLON.Vector3(0, 1, 0), scene);
-  downLight.intensity = 0.2;
-  downLight.includedOnlyMeshes.push(earth);
-  var upLight = new BABYLON.HemisphericLight("uplight", new BABYLON.Vector3(0, -1, 0), scene);
-  upLight.intensity = 0.2;
-  upLight.includedOnlyMeshes.push(earth); //set settings for focusing and camera action w/ meshes in scene
+  sunlight.intensity = 1.5; // //environment lighting
+  // var downLight = new BABYLON.HemisphericLight("downlight", new BABYLON.Vector3(0, 1, 0), scene)
+  // downLight.intensity = 0.2
+  // downLight.includedOnlyMeshes = scene.planets
+  // var upLight = new BABYLON.HemisphericLight("uplight", new BABYLON.Vector3(0, -1, 0), scene)
+  // upLight.intensity = 0.2
+  // upLight.includedOnlyMeshes = scene.planets
+  //set settings for focusing and camera action w/ meshes in scene
 
   for (var i = 1; i < scene.meshes.length; i++) {
     scene.meshes[i].checkCollisions = true;
@@ -5955,14 +5966,12 @@ var createScene = function createScene() {
   //create animations for planet rotations
 
 
-  var rotationAnims = new BABYLON.AnimationGroup("rotationGroup");
+  rotationAnims = new BABYLON.AnimationGroup("rotationGroup");
   (0, _planetMovements.rotatePlanet)(earth, 22.5, 1, rotationAnims);
-  rotationAnims.normalize();
   rotationAnims.play(true); //create animations for planet orbits
 
-  var orbitAnims = new BABYLON.AnimationGroup("orbitGroup");
-  var earthTrack = (0, _planetMovements.animOrbit)(earth, 0.41671, 365, 10, orbitAnims, scene);
-  orbitAnims.normalize();
+  orbitAnims = new BABYLON.AnimationGroup("orbitGroup");
+  (0, _planetMovements.animOrbit)(earth, 0.41671, 365.25, 10, orbitAnims, scene);
   orbitAnims.play(true); //----------------------------GUI-------------------------------
   //create Babylon GUI for controls at top of screen
 
@@ -6025,12 +6034,12 @@ var createScene = function createScene() {
   speedSlider.width = window.innerWidth / 3 - 50 + "px";
   speedSlider.onValueChangedObservable.add(function (value) {
     speedHeader.text = speedString(value);
-    orbitAnims.speedRatio = value; //cap the rotation speed at 20pi radians/sec
+    orbitAnims.speedRatio = value; //cap the rotation speed at 10pi radians/sec
 
-    if (value <= 40) {
+    if (value <= 20) {
       rotationAnims.speedRatio = value;
     } else {
-      rotationAnims.speedRatio = 40;
+      rotationAnims.speedRatio = 20;
     }
   });
   speedPanel.addControl(speedSlider); //stack panel for velocity vector checkbox
@@ -6179,53 +6188,66 @@ var createScene = function createScene() {
         break;
     }
   }); //--------------Debugging Axis----------------
-
-  function showWorldAxis(size) {
-    var makeTextPlane = function makeTextPlane(text, color, size) {
-      var dynamicTexture = new BABYLON.DynamicTexture("DynamicTexture", 50, scene, true);
-      dynamicTexture.hasAlpha = true;
-      dynamicTexture.drawText(text, 5, 40, "bold 36px Arial", color, "transparent", true);
-      var plane = BABYLON.Mesh.CreatePlane("TextPlane", size, scene, true);
-      plane.material = new BABYLON.StandardMaterial("TextPlaneMaterial", scene);
-      plane.material.backFaceCulling = false;
-      plane.material.specularColor = new BABYLON.Color3(0, 0, 0);
-      plane.material.diffuseTexture = dynamicTexture;
-      return plane;
-    };
-
-    var axisX = BABYLON.Mesh.CreateLines("axisX", [BABYLON.Vector3.Zero(), new BABYLON.Vector3(size, 0, 0), new BABYLON.Vector3(size * 0.95, 0.05 * size, 0), new BABYLON.Vector3(size, 0, 0), new BABYLON.Vector3(size * 0.95, -0.05 * size, 0)], scene);
-    axisX.color = new BABYLON.Color3(1, 0, 0);
-    var xChar = makeTextPlane("X", "red", size / 10);
-    xChar.position = new BABYLON.Vector3(0.9 * size, -0.05 * size, 0);
-    var axisY = BABYLON.Mesh.CreateLines("axisY", [BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, size, 0), new BABYLON.Vector3(-0.05 * size, size * 0.95, 0), new BABYLON.Vector3(0, size, 0), new BABYLON.Vector3(0.05 * size, size * 0.95, 0)], scene);
-    axisY.color = new BABYLON.Color3(0, 1, 0);
-    var yChar = makeTextPlane("Y", "green", size / 10);
-    yChar.position = new BABYLON.Vector3(0, 0.9 * size, -0.05 * size);
-    var axisZ = BABYLON.Mesh.CreateLines("axisZ", [BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, 0, size), new BABYLON.Vector3(0, -0.05 * size, size * 0.95), new BABYLON.Vector3(0, 0, size), new BABYLON.Vector3(0, 0.05 * size, size * 0.95)], scene);
-    axisZ.color = new BABYLON.Color3(0, 0, 1);
-    var zChar = makeTextPlane("Z", "blue", size / 10);
-    zChar.position = new BABYLON.Vector3(0, 0.05 * size, 0.9 * size);
-  }
-
-  ;
-  showWorldAxis(15);
-
-  function localAxes(size, mesh) {
-    var pilot_local_axisX = BABYLON.Mesh.CreateLines("pilot_local_axisX", [new BABYLON.Vector3.Zero(), new BABYLON.Vector3(size, 0, 0), new BABYLON.Vector3(size * 0.95, 0.05 * size, 0), new BABYLON.Vector3(size, 0, 0), new BABYLON.Vector3(size * 0.95, -0.05 * size, 0)], scene);
-    pilot_local_axisX.color = new BABYLON.Color3(1, 0, 0);
-    var pilot_local_axisY = BABYLON.Mesh.CreateLines("pilot_local_axisY", [new BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, size, 0), new BABYLON.Vector3(-0.05 * size, size * 0.95, 0), new BABYLON.Vector3(0, size, 0), new BABYLON.Vector3(0.05 * size, size * 0.95, 0)], scene);
-    pilot_local_axisY.color = new BABYLON.Color3(0, 1, 0);
-    var pilot_local_axisZ = BABYLON.Mesh.CreateLines("pilot_local_axisZ", [new BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, 0, size), new BABYLON.Vector3(0, -0.05 * size, size * 0.95), new BABYLON.Vector3(0, 0, size), new BABYLON.Vector3(0, 0.05 * size, size * 0.95)], scene);
-    pilot_local_axisZ.color = new BABYLON.Color3(0, 0, 1);
-    var local_origin = mesh.clone("testerHee");
-    local_origin.isVisible = false;
-    pilot_local_axisX.parent = local_origin;
-    pilot_local_axisY.parent = local_origin;
-    pilot_local_axisZ.parent = local_origin;
-    return local_origin;
-  } //localAxes(4, earth);
+  // function showWorldAxis(size) {
+  //     var makeTextPlane = function(text, color, size) {
+  //         var dynamicTexture = new BABYLON.DynamicTexture("DynamicTexture", 50, scene, true);
+  //         dynamicTexture.hasAlpha = true;
+  //         dynamicTexture.drawText(text, 5, 40, "bold 36px Arial", color , "transparent", true);
+  //         var plane = BABYLON.Mesh.CreatePlane("TextPlane", size, scene, true);
+  //         plane.material = new BABYLON.StandardMaterial("TextPlaneMaterial", scene);
+  //         plane.material.backFaceCulling = false;
+  //         plane.material.specularColor = new BABYLON.Color3(0, 0, 0);
+  //         plane.material.diffuseTexture = dynamicTexture;
+  //     return plane;
+  //         };
+  //     var axisX = BABYLON.Mesh.CreateLines("axisX", [ 
+  //         BABYLON.Vector3.Zero(), new BABYLON.Vector3(size, 0, 0), new BABYLON.Vector3(size * 0.95, 0.05 * size, 0), 
+  //         new BABYLON.Vector3(size, 0, 0), new BABYLON.Vector3(size * 0.95, -0.05 * size, 0)
+  //         ], scene);
+  //     axisX.color = new BABYLON.Color3(1, 0, 0);
+  //     var xChar = makeTextPlane("X", "red", size / 10);
+  //     xChar.position = new BABYLON.Vector3(0.9 * size, -0.05 * size, 0);
+  //     var axisY = BABYLON.Mesh.CreateLines("axisY", [
+  //         BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, size, 0), new BABYLON.Vector3( -0.05 * size, size * 0.95, 0), 
+  //         new BABYLON.Vector3(0, size, 0), new BABYLON.Vector3( 0.05 * size, size * 0.95, 0)
+  //         ], scene);
+  //     axisY.color = new BABYLON.Color3(0, 1, 0);
+  //     var yChar = makeTextPlane("Y", "green", size / 10);
+  //     yChar.position = new BABYLON.Vector3(0, 0.9 * size, -0.05 * size);
+  //     var axisZ = BABYLON.Mesh.CreateLines("axisZ", [
+  //         BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, 0, size), new BABYLON.Vector3( 0 , -0.05 * size, size * 0.95),
+  //         new BABYLON.Vector3(0, 0, size), new BABYLON.Vector3( 0, 0.05 * size, size * 0.95)
+  //         ], scene);
+  //     axisZ.color = new BABYLON.Color3(0, 0, 1);
+  //     var zChar = makeTextPlane("Z", "blue", size / 10);
+  //     zChar.position = new BABYLON.Vector3(0, 0.05 * size, 0.9 * size);
+  // };
+  // showWorldAxis(15);
+  // function localAxes(size, mesh) {
+  //     var pilot_local_axisX = BABYLON.Mesh.CreateLines("pilot_local_axisX", [ 
+  //     new BABYLON.Vector3.Zero(), new BABYLON.Vector3(size, 0, 0), new BABYLON.Vector3(size * 0.95, 0.05 * size, 0), 
+  //     new BABYLON.Vector3(size, 0, 0), new BABYLON.Vector3(size * 0.95, -0.05 * size, 0)
+  //     ], scene);
+  //     pilot_local_axisX.color = new BABYLON.Color3(1, 0, 0);
+  //     var pilot_local_axisY = BABYLON.Mesh.CreateLines("pilot_local_axisY", [
+  //         new BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, size, 0), new BABYLON.Vector3(-0.05 * size, size * 0.95, 0),
+  //         new BABYLON.Vector3(0, size, 0), new BABYLON.Vector3(0.05 * size, size * 0.95, 0)
+  //     ], scene);
+  //     pilot_local_axisY.color = new BABYLON.Color3(0, 1, 0);
+  //     var pilot_local_axisZ = BABYLON.Mesh.CreateLines("pilot_local_axisZ", [
+  //         new BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, 0, size), new BABYLON.Vector3( 0 , -0.05 * size, size * 0.95),
+  //         new BABYLON.Vector3(0, 0, size), new BABYLON.Vector3( 0, 0.05 * size, size * 0.95)
+  //         ], scene);
+  //     pilot_local_axisZ.color = new BABYLON.Color3(0, 0, 1);
+  //     var local_origin = mesh.clone("testerHee");
+  //     local_origin.isVisible = false;
+  //     pilot_local_axisX.parent = local_origin;
+  //     pilot_local_axisY.parent = local_origin;
+  //     pilot_local_axisZ.parent = local_origin; 
+  //     return local_origin;
+  // }
+  //localAxes(4, earth);
   //loading screen
-
 
   engine.displayLoadingUI();
   scene.executeWhenReady(function () {
@@ -6321,7 +6343,8 @@ setInterval(function () {
   audioDuration.innerHTML = getMinutes(audioSlider.value); //------------------Scene Events-------------------
   //add major and minor axis
 
-  if (voiceover.currentTime > 43 && !scene.getMeshByName("majorAxis")) {
+  if (voiceover.currentTime > 43 && voiceover.currentTime < 300 && !scene.getMeshByName("majorAxis")) {
+    console.log('bad');
     var earthPath = scene.getMeshByName("earth").ellipse;
     var majorAxis = BABYLON.MeshBuilder.CreateLines("majorAxis", {
       points: [earthPath[0], earthPath[Math.floor(earthPath.length / 2)]],
@@ -6498,9 +6521,14 @@ setInterval(function () {
       var earthTrack = scene.getMeshByName('earthTrack');
       var earth = scene.getMeshByName('earth'); //change eccentricity
 
-      var path = (0, _planetMovements.orbitPath)(value, 365, 10);
-      earthTrack = BABYLON.Mesh.CreateLines(null, path, null, null, earthTrack);
-      earth.ellipse = path; //if velocity vector is showing, update it's path
+      var newPath = (0, _planetMovements.orbitPath)(value, 365, 10);
+      scene.removeMesh(earthTrack);
+      earthTrack.dispose();
+      earthTrack = BABYLON.MeshBuilder.CreateLines('earthTrack', {
+        points: newPath,
+        updatable: true
+      }, scene);
+      earth.ellipse = newPath; //if velocity vector is showing, update it's path
 
       if (checkbox.isChecked) {
         deleteVelocityVector();
@@ -6516,7 +6544,7 @@ setInterval(function () {
 
         scene.getMeshByName("majorAxis").dispose();
         var majorAxis = BABYLON.MeshBuilder.CreateLines("majorAxis", {
-          points: [path[0], path[Math.floor(path.length / 2)]],
+          points: [newPath[0], newPath[Math.floor(newPath.length / 2)]],
           updatable: true
         }, scene);
         majorAxis.color = BABYLON.Color3.Blue();
@@ -6535,11 +6563,11 @@ setInterval(function () {
   if (Math.floor(voiceover.currentTime) == 299) {
     //gradually change the eccentricity slider to equal 0.0167 over ~one second
     var i = 0;
-    var delta = (0.0167 - eccentricitySlider.value) / 10;
-    delta = Math.round(delta * 100000) / 100000; //error
+    var delta = (0.0167 - eccentricitySlider.value) / 20;
+    delta = Math.round(delta * 1000000) / 1000000; //error
 
     var eccInterval = setInterval(function () {
-      if (eccentricitySlider.value == 0.0167 || i >= 10) {
+      if (eccentricitySlider.value == 0.0167 || i >= 20) {
         clearInterval(eccInterval);
         delta = 0;
       }
@@ -6550,11 +6578,94 @@ setInterval(function () {
   } //delete the major and minor axis
 
 
-  if (voiceover.currentTime > 300 || voiceover.currentTime < 43 && scene.getMeshByName("majorAxis") != null) {
+  if ((voiceover.currentTime > 300 || voiceover.currentTime < 43) && scene.getMeshByName("majorAxis") != null) {
     scene.removeMesh(scene.getMeshByName("majorAxis"));
     scene.removeMesh(scene.getMeshByName("minorAxis"));
     scene.getMeshByName("majorAxis").dispose();
     scene.getMeshByName("minorAxis").dispose();
+  } //create all the other planets
+
+
+  if (voiceover.currentTime > 305 && scene.getMeshByName("mercury") == null) {
+    //----------Planets----------
+    //create Mercury
+    var mercury = BABYLON.Mesh.CreateSphere("mercury", 16, .25, scene);
+    mercury.renderingGroupId = 3;
+    scene.planets.push(mercury); //create Mercury's texture
+
+    var mercuryMat = new BABYLON.StandardMaterial("mercury-material", scene);
+    mercuryMat.diffuseTexture = new BABYLON.Texture(require("./planetTextures/2k_mercury.jpg"), scene);
+    mercuryMat.specularColor = new BABYLON.Color3(0, 0, 0);
+    mercury.material = mercuryMat; //create Venus
+
+    var venus = BABYLON.Mesh.CreateSphere("venus", 32, .48, scene);
+    venus.renderingGroupId = 3;
+    scene.planets.push(venus); //create Venus's texture
+
+    var venusMat = new BABYLON.StandardMaterial("venus-material", scene);
+    venusMat.diffuseTexture = new BABYLON.Texture(require("./planetTextures/2k_venus.jpg"), scene);
+    venusMat.specularColor = new BABYLON.Color3(0, 0, 0);
+    venus.material = venusMat; //create Mars
+
+    var mars = BABYLON.Mesh.CreateSphere("mars", 24, .325, scene);
+    mars.renderingGroupId = 3;
+    scene.planets.push(mars); //create Mars's texture
+
+    var marsMat = new BABYLON.StandardMaterial("mars-material", scene);
+    marsMat.diffuseTexture = new BABYLON.Texture(require("./planetTextures/2k_mars.jpg"), scene);
+    marsMat.specularColor = new BABYLON.Color3(0, 0, 0);
+    mars.material = marsMat; //create Jupiter
+
+    var jupiter = BABYLON.Mesh.CreateSphere("jupiter", 32, 2, scene);
+    jupiter.renderingGroupId = 3;
+    scene.planets.push(jupiter); //create Jupiter's texture
+
+    var jupiterMat = new BABYLON.StandardMaterial("jupiter-material", scene);
+    jupiterMat.diffuseTexture = new BABYLON.Texture(require("./planetTextures/2k_jupiter.jpg"), scene);
+    jupiterMat.specularColor = new BABYLON.Color3(0, 0, 0);
+    jupiter.material = jupiterMat; //create Saturn
+
+    var saturn = BABYLON.Mesh.CreateSphere("saturn", 32, 1.75, scene);
+    saturn.renderingGroupId = 3;
+    scene.planets.push(saturn); //create Saturn's texture
+
+    var saturnMat = new BABYLON.StandardMaterial("saturn-material", scene);
+    saturnMat.diffuseTexture = new BABYLON.Texture(require("./planetTextures/2k_saturn.jpg"), scene);
+    saturnMat.specularColor = new BABYLON.Color3(0, 0, 0);
+    saturn.material = saturnMat; //create Uranus
+
+    var uranus = BABYLON.Mesh.CreateSphere("uranus", 32, 1.1, scene);
+    uranus.renderingGroupId = 3;
+    scene.planets.push(uranus); //create Uranus's texture
+
+    var uranusMat = new BABYLON.StandardMaterial("uranus-material", scene);
+    uranusMat.diffuseTexture = new BABYLON.Texture(require("./planetTextures/2k_uranus.jpg"), scene);
+    uranusMat.specularColor = new BABYLON.Color3(0, 0, 0);
+    uranus.material = uranusMat; //create Neptune
+
+    var neptune = BABYLON.Mesh.CreateSphere("neptune", 32, 1, scene);
+    neptune.renderingGroupId = 3;
+    scene.planets.push(neptune); //create Neptune's texture
+
+    var neptuneMat = new BABYLON.StandardMaterial("neptune-material", scene);
+    neptuneMat.diffuseTexture = new BABYLON.Texture(require("./planetTextures/2k_neptune.jpg"), scene);
+    neptuneMat.specularColor = new BABYLON.Color3(0, 0, 0);
+    neptune.material = neptuneMat; //----------Animations----------
+
+    (0, _planetMovements.rotatePlanet)(mercury, 2, 58.64583, rotationAnims);
+    (0, _planetMovements.rotatePlanet)(venus, 177, 243.69, rotationAnims);
+    (0, _planetMovements.rotatePlanet)(mars, 25.2, 1.0288, rotationAnims);
+    (0, _planetMovements.rotatePlanet)(jupiter, 3.13, .4135, rotationAnims);
+    (0, _planetMovements.rotatePlanet)(saturn, 26.73, .444, rotationAnims);
+    (0, _planetMovements.rotatePlanet)(uranus, 97.77, .7183, rotationAnims);
+    (0, _planetMovements.rotatePlanet)(neptune, 28.32, 0.67125, rotationAnims);
+    (0, _planetMovements.animOrbit)(mercury, 0.2056, 87.97, 3.9, orbitAnims, scene);
+    (0, _planetMovements.animOrbit)(venus, 0.0068, 224.7, 7.2, orbitAnims, scene);
+    (0, _planetMovements.animOrbit)(mars, 0.0934, 686.98, 15.24, orbitAnims, scene);
+    (0, _planetMovements.animOrbit)(jupiter, 0.0484, 4332.59, 52.03, orbitAnims, scene);
+    (0, _planetMovements.animOrbit)(saturn, 0.0542, 10759.22, 95.37, orbitAnims, scene);
+    (0, _planetMovements.animOrbit)(uranus, 0.0472, 30685.16, 191.9, orbitAnims, scene);
+    (0, _planetMovements.animOrbit)(neptune, 0.0086, 60190.08, 300.69, orbitAnims, scene);
   }
 }, 1000); //function to create the velocity vector for earth
 
@@ -6666,7 +6777,7 @@ var deleteVelocityVector = function deleteVelocityVector() {
     scene.getMeshByName("velocityVector").dispose();
   }
 };
-},{"babylonjs":"../../node_modules/babylonjs/babylon.js","babylonjs-gui":"../../node_modules/babylonjs-gui/babylon.gui.min.js","gsap":"../../node_modules/gsap/index.js","./planet-movements":"../simulations/planetaryOrbit/planet-movements.js","./planetary-orbit-voiceover.mp3":"../simulations/planetaryOrbit/planetary-orbit-voiceover.mp3","../../simAssets/skybox/milkyway/milkyway_px.jpg":"../simAssets/skybox/milkyway/milkyway_px.jpg","../../simAssets/skybox/milkyway/milkyway_py.jpg":"../simAssets/skybox/milkyway/milkyway_py.jpg","../../simAssets/skybox/milkyway/milkyway_pz.jpg":"../simAssets/skybox/milkyway/milkyway_pz.jpg","../../simAssets/skybox/milkyway/milkyway_nx.jpg":"../simAssets/skybox/milkyway/milkyway_nx.jpg","../../simAssets/skybox/milkyway/milkyway_ny.jpg":"../simAssets/skybox/milkyway/milkyway_ny.jpg","../../simAssets/skybox/milkyway/milkyway_nz.jpg":"../simAssets/skybox/milkyway/milkyway_nz.jpg","../../simAssets/earthTextures/2k-earth-daymap.jpg":"../simAssets/earthTextures/2k-earth-daymap.jpg","../../simAssets/earthTextures/2k-earth-normal.jpg":"../simAssets/earthTextures/2k-earth-normal.jpg","../../simAssets/audioIcons/play button.png":"../simAssets/audioIcons/play button.png","../../simAssets/audioIcons/pause button.png":"../simAssets/audioIcons/pause button.png"}],"../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"babylonjs":"../../node_modules/babylonjs/babylon.js","babylonjs-gui":"../../node_modules/babylonjs-gui/babylon.gui.min.js","gsap":"../../node_modules/gsap/index.js","./planet-movements":"../simulations/planetaryOrbit/planet-movements.js","./planetary-orbit-voiceover.mp3":"../simulations/planetaryOrbit/planetary-orbit-voiceover.mp3","../../simAssets/skybox/milkyway/milkyway_px.jpg":"../simAssets/skybox/milkyway/milkyway_px.jpg","../../simAssets/skybox/milkyway/milkyway_py.jpg":"../simAssets/skybox/milkyway/milkyway_py.jpg","../../simAssets/skybox/milkyway/milkyway_pz.jpg":"../simAssets/skybox/milkyway/milkyway_pz.jpg","../../simAssets/skybox/milkyway/milkyway_nx.jpg":"../simAssets/skybox/milkyway/milkyway_nx.jpg","../../simAssets/skybox/milkyway/milkyway_ny.jpg":"../simAssets/skybox/milkyway/milkyway_ny.jpg","../../simAssets/skybox/milkyway/milkyway_nz.jpg":"../simAssets/skybox/milkyway/milkyway_nz.jpg","../../simAssets/earthTextures/2k-earth-daymap.jpg":"../simAssets/earthTextures/2k-earth-daymap.jpg","../../simAssets/audioIcons/play button.png":"../simAssets/audioIcons/play button.png","../../simAssets/audioIcons/pause button.png":"../simAssets/audioIcons/pause button.png","./planetTextures/2k_mercury.jpg":"../simulations/planetaryOrbit/planetTextures/2k_mercury.jpg","./planetTextures/2k_venus.jpg":"../simulations/planetaryOrbit/planetTextures/2k_venus.jpg","./planetTextures/2k_mars.jpg":"../simulations/planetaryOrbit/planetTextures/2k_mars.jpg","./planetTextures/2k_jupiter.jpg":"../simulations/planetaryOrbit/planetTextures/2k_jupiter.jpg","./planetTextures/2k_saturn.jpg":"../simulations/planetaryOrbit/planetTextures/2k_saturn.jpg","./planetTextures/2k_uranus.jpg":"../simulations/planetaryOrbit/planetTextures/2k_uranus.jpg","./planetTextures/2k_neptune.jpg":"../simulations/planetaryOrbit/planetTextures/2k_neptune.jpg"}],"../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -6694,7 +6805,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58475" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "63259" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
