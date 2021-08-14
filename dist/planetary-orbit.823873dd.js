@@ -6324,11 +6324,13 @@ setInterval(function () {
   if (voiceover.currentTime > 43 && !scene.getMeshByName("majorAxis")) {
     var earthPath = scene.getMeshByName("earth").ellipse;
     var majorAxis = BABYLON.MeshBuilder.CreateLines("majorAxis", {
-      points: [earthPath[0], earthPath[Math.floor(earthPath.length / 2)]]
+      points: [earthPath[0], earthPath[Math.floor(earthPath.length / 2)]],
+      updatable: true
     }, scene);
     majorAxis.color = BABYLON.Color3.Blue();
     var minorAxis = BABYLON.MeshBuilder.CreateLines("minorAxis", {
-      points: [earthPath[16080], earthPath[earthPath.length - 16080]]
+      points: [earthPath[16080], earthPath[earthPath.length - 16080]],
+      updatable: true
     }, scene);
     minorAxis.color = BABYLON.Color3.Green();
   } //add major and minor axis labels
@@ -6503,6 +6505,27 @@ setInterval(function () {
       if (checkbox.isChecked) {
         deleteVelocityVector();
         createVelocityVector();
+      } //if the axis still need to show, update them
+
+
+      if (voiceover.currentTime < 300 && voiceover.currentTime > 43) {
+        //find major axis cords
+        var zCord = -1 * 10 * eccentricitySlider.value; //= -c
+
+        var xCord = Math.sqrt(100 - zCord * zCord); //find b
+
+        scene.getMeshByName("majorAxis").dispose();
+        var majorAxis = BABYLON.MeshBuilder.CreateLines("majorAxis", {
+          points: [path[0], path[Math.floor(path.length / 2)]],
+          updatable: true
+        }, scene);
+        majorAxis.color = BABYLON.Color3.Blue();
+        scene.getMeshByName("minorAxis").dispose();
+        var minorAxis = BABYLON.MeshBuilder.CreateLines("minorAxis", {
+          points: [new BABYLON.Vector3(xCord, 0, zCord), new BABYLON.Vector3(-1 * xCord, 0, zCord)],
+          updatable: true
+        }, scene);
+        minorAxis.color = BABYLON.Color3.Green();
       }
     });
     eccentricityPanel.addControl(eccentricitySlider);
@@ -6515,10 +6538,8 @@ setInterval(function () {
     var delta = (0.0167 - eccentricitySlider.value) / 10;
     delta = Math.round(delta * 100000) / 100000; //error
 
-    console.log(delta, delta * 10, eccentricitySlider.value + delta * 10);
     var eccInterval = setInterval(function () {
       if (eccentricitySlider.value == 0.0167 || i >= 10) {
-        console.log(eccentricitySlider.value);
         clearInterval(eccInterval);
         delta = 0;
       }
@@ -6526,10 +6547,14 @@ setInterval(function () {
       eccentricitySlider.value += delta;
       i++;
     }, 75);
-  }
+  } //delete the major and minor axis
 
-  if (Math.floor(voiceover.currentTime) == 301) {
-    console.log(eccentricitySlider.value);
+
+  if (voiceover.currentTime > 300 || voiceover.currentTime < 43 && scene.getMeshByName("majorAxis") != null) {
+    scene.removeMesh(scene.getMeshByName("majorAxis"));
+    scene.removeMesh(scene.getMeshByName("minorAxis"));
+    scene.getMeshByName("majorAxis").dispose();
+    scene.getMeshByName("minorAxis").dispose();
   }
 }, 1000); //function to create the velocity vector for earth
 
@@ -6669,7 +6694,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59977" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58475" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
