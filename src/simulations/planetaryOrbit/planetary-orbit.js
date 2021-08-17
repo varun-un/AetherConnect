@@ -14,6 +14,8 @@ var checkbox
 var rotationAnims, orbitAnims
 //Babylon GUI stuff
 var advancedTexture, eccentricitySlider
+//For GSAP animations of equations
+var circularEqDown = false, visVivaDown = false
 
 var createScene = function () {
     var scene = new BABYLON.Scene(engine)
@@ -483,7 +485,6 @@ function startSim() {
 
     //set audio slider max to voiceover duration
     audioSlider.max = voiceover.duration
-    
 }
 
 //--------------Audioplayer----------------
@@ -684,6 +685,47 @@ setInterval(function () {
         var leftSector = new BABYLON.PolygonMeshBuilder("leftSector", leftSectorPoints, scene, earcut).build()
         leftSector.material = sectorMat
 
+    }
+
+    //GSAP Equation animations
+    //Bring down the cirular velocity eq
+    if (voiceover.currentTime > 169 && voiceover.currentTime < 195 && !circularEqDown) {
+
+        TweenMax.to('#circularVelocity', 2, { 
+            y:'250px', 
+            ease:Power2.easeOut
+        })
+        circularEqDown = true
+    }
+
+    //Bring up the circular velocity eq
+    if ((voiceover.currentTime > 195 || voiceover.currentTime < 170) && circularEqDown) {
+
+        TweenMax.to('#circularVelocity', 2, { 
+            y:'-250px', 
+            ease:Power2.easeOut
+        })
+        circularEqDown = false
+    }
+
+    //Bring down the vis viva eq
+    if (voiceover.currentTime > 209 && voiceover.currentTime < 228 && !visVivaDown) {
+
+        TweenMax.to('#visViva', 2, {
+            y:'250px',
+            ease:Power2.easeOut
+        })
+        visVivaDown = true
+    }
+
+    //Bring up the vis viva eq
+    if ((voiceover.currentTime > 228 || voiceover.currentTime < 209) && visVivaDown) {
+
+        TweenMax.to('#visViva', 2, {
+            y:'-250px',
+            ease:Power2.easeOut
+        })
+        visVivaDown = false
     }
 
     //destroy the shaded sectors

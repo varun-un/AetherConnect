@@ -5693,6 +5693,7 @@ var rotatePlanet = function rotatePlanet(planet, tilt, dayLength, group) {
 };
 /**
  * Uses Kepler's Equation to solve for points along a planet's orbit, each spaced 6 minutes apart
+ * http://spiff.rit.edu/classes/phys440/lectures/ellipse/ellipse.html
  * @param {number} eccentricity - The eccentricity of the orbit to calculate (c/a)
  * @param {number} period - The period of the planet's orbit, in Earth days
  * @param {number} a - The The length of the semi-major axis of the orbit's ellipse (in scene units)
@@ -5868,7 +5869,10 @@ var showEarthVelocity = false,
 var checkbox;
 var rotationAnims, orbitAnims; //Babylon GUI stuff
 
-var advancedTexture, eccentricitySlider;
+var advancedTexture, eccentricitySlider; //For GSAP animations of equations
+
+var circularEqDown = false,
+    visVivaDown = false;
 
 var createScene = function createScene() {
   var scene = new BABYLON.Scene(engine);
@@ -6468,6 +6472,47 @@ setInterval(function () {
 
     var leftSector = new BABYLON.PolygonMeshBuilder("leftSector", leftSectorPoints, scene, earcut).build();
     leftSector.material = sectorMat;
+  } //GSAP Equation animations
+  //Bring down the cirular velocity eq
+
+
+  if (voiceover.currentTime > 170 && voiceover.currentTime < 195 && !circularEqDown) {
+    _gsap.TweenMax.to('#circularVelocity', 2, {
+      y: '250px',
+      ease: _gsap.Power2.easeOut
+    });
+
+    circularEqDown = true;
+  } //Bring up the circular velocity eq
+
+
+  if ((voiceover.currentTime > 195 || voiceover.currentTime < 170) && circularEqDown) {
+    _gsap.TweenMax.to('#circularVelocity', 2, {
+      y: '-250px',
+      ease: _gsap.Power2.easeOut
+    });
+
+    circularEqDown = false;
+  } //Bring down the vis viva eq
+
+
+  if (voiceover.currentTime > 209 && voiceover.currentTime < 228 && !visVivaDown) {
+    _gsap.TweenMax.to('#visViva', 2, {
+      y: '250px',
+      ease: _gsap.Power2.easeOut
+    });
+
+    visVivaDown = true;
+  } //Bring up the vis viva eq
+
+
+  if ((voiceover.currentTime > 228 || voiceover.currentTime < 209) && visVivaDown) {
+    _gsap.TweenMax.to('#visViva', 2, {
+      y: '-250px',
+      ease: _gsap.Power2.easeOut
+    });
+
+    visVivaDown = false;
   } //destroy the shaded sectors
 
 
@@ -6805,7 +6850,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "63259" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56830" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

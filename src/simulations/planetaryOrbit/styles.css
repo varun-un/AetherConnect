@@ -173,3 +173,29 @@ body {
     font-family: 'Roboto', sans-serif;
     color: #ccccccff;
 }
+
+.formulaDiv {
+    position: absolute;
+    top: -175px;        /* Actually will come down to 75px w GSAP */
+    right: 35px;
+    width: 225px;
+    display: flexbox;
+    flex-direction: row;
+    /* padding: 10px; */
+}
+
+.visViva {
+    height: auto;
+    width: 200px;
+}
+
+.eqImg {
+    height: auto;
+    width: 125px;
+}
+
+.GImg {
+    height: auto;
+    width: 225px;
+    margin-top: 20px;
+}

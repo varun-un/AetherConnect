@@ -40,6 +40,7 @@ const rotatePlanet = function (planet, tilt, dayLength, group) {
 
 /**
  * Uses Kepler's Equation to solve for points along a planet's orbit, each spaced 6 minutes apart
+ * http://spiff.rit.edu/classes/phys440/lectures/ellipse/ellipse.html
  * @param {number} eccentricity - The eccentricity of the orbit to calculate (c/a)
  * @param {number} period - The period of the planet's orbit, in Earth days
  * @param {number} a - The The length of the semi-major axis of the orbit's ellipse (in scene units)
