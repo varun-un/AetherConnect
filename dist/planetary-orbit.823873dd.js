@@ -6476,7 +6476,7 @@ setInterval(function () {
   //Bring down the cirular velocity eq
 
 
-  if (voiceover.currentTime > 170 && voiceover.currentTime < 195 && !circularEqDown) {
+  if (voiceover.currentTime > 169 && voiceover.currentTime < 195 && !circularEqDown) {
     _gsap.TweenMax.to('#circularVelocity', 2, {
       y: '250px',
       ease: _gsap.Power2.easeOut
@@ -6850,7 +6850,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56830" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56828" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
