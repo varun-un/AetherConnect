@@ -14,7 +14,8 @@
   "dependencies": {
     "babylonjs": "^4.2.0",
     "babylonjs-gui": "^4.2.0",
-    "gsap": "^3.6.1"
+    "gsap": "^3.6.1",
+    "preact": "^10.5.14"
   },
   "devDependencies": {
     "cssnano": "^4.1.10",
