@@ -33,7 +33,7 @@ body {
     width: 100%;
     height: 100%;
     background: #9bdc28;
-    clip-path: circle(150px at 80% 20%);
+    clip-path: circle(150px at 80% 10%);
     transition: 0.5s ease-in-out;
 }
 
@@ -42,11 +42,11 @@ body {
 }
 
 .container .card:after {
-    content: 'Nike';
+    /* content: 'Space'; */
     position: absolute;
     top: 30%;
     left: -20%;
-    font-size: 12em;
+    font-size: 8em;
     font-weight: 800;
     font-style: italic;
     color: rgba(255, 255, 255, .04);
@@ -63,13 +63,13 @@ body {
 }
 
 .container .card:hover .imgBx {
-    top: 0%;
+    top: 5%;
     transform: translateY(0%);
 }
 
 .container .card .imgBx img {
     position: absolute;
-    top: 50%;
+    top: 30%;
     left: 50%;
     transform: translate(-50%, -50%) rotate(-25deg);
     width: 270px;
@@ -80,6 +80,7 @@ body {
     bottom: 0;
     width: 100%;
     height: 100px;
+    left: 5px;
     text-align: center;
     transition: 1s;
     z-index: 10;
@@ -91,37 +92,58 @@ body {
 
 .container .card .contentBx h2 {
     position: relative;
+    top: -8%;
+    left: -5px;
     font-weight: 600;
     letter-spacing: 1px;
     color: #fff;
 }
 
-.container .card .contentBx .size,
-.container .card .contentBx .color {
+.container .card .contentBx .desc {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 8px 20px;
+    padding: 8px 10px;
+    margin-top: -10px;
+    /* left: 50px; */
     transition: 0.5s;
     opacity: 0;
     visibility: hidden;
 }
 
-.container .card:hover .contentBx .size {
-    opacity: 1;
-    visibility: visible;
-    transition-delay: 0.5s;
+.container .card .contentBx .grades {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 10px;
+    /* left: 50px; */
+    transition: 0.5s;
+    opacity: 0;
+    visibility: hidden;
 }
 
-.container .card:hover .contentBx .color{
+.container .card:hover .contentBx .desc {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0.4s;
+}
+
+.container .card:hover .contentBx .grades{
     opacity: 1;
     visibility: visible;
     transition-delay: 0.6s;
 }
 
+.container .card .contentBx .desc p {
+    color: #fff;
+    font-weight: 300;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-right: 10px;
+}
 
-.container .card .contentBx .size h3,
-.container .card .contentBx .color h3 {
+.container .card .contentBx .grades h3 {
     color: #fff;
     font-weight: 300;
     font-size: 14px;
@@ -130,62 +152,28 @@ body {
     margin-right: 10px;
 }
 
-.container .card .contentBx .size span {
-    width: 26px;
-    height: 26px;
-    text-align: center;
-    line-height: 26px;
-    font-size: 14px;
-    display: inline-block;
-    color: #111;
-    background: #fff;
-    margin: 0 5px;
-    transition: 0.5s;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.container .card .contentBx .size span:hover {
-    background: #9bdc28;
-}
-
-.container .card .contentBx .color span {
-    width: 20px;
-    height: 20px;
-    background: #ff0;
-    border-radius: 50%;
-    margin: 0 5px;
-    cursor: pointer;
-}
-
-.container .card .contentBx .color span:nth-child(2) {
-    background: #9bdc28;
-}
-
-.container .card .contentBx .color span:nth-child(2) {
-    background: #03a9f4;
-}
-
-.container .card .contentBx .color span:nth-child(2) {
-    background: #e9573f;
-}
-
 .container .card .contentBx a {
     display: inline-block;
     padding: 10px 20px;
     background: #fff;
     border-radius: 4px;
     margin-top: 10px;
+    margin-left: -10px;
     text-decoration: none;
     font-weight: 600;
     color: #111;
     opacity: 0;
-    transform: translateY(50px);
-    transition: 0.5s;
+    transform: translateY(50px), translateX(50px);
+    /* transition: 0.5s; */
+    transition: transform 0.5s, opacity 0.5s, color 1s;
 }
 
 .container .card:hover .contentBx a {
     opacity: 1;
-    transform: translateY(0);
-    transition-delay: 0.75s;
+    transform: translateY(0), translateX(0);
+    transition-delay: 0.5s;
+}
+
+.container .card .contentBx a:hover {
+    background: #f00;
 }
