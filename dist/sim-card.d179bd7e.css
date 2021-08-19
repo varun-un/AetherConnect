@@ -41,8 +41,8 @@ body {
     clip-path: circle(300px at 80% -20%);
 }
 
-.container .card:after {
-    /* content: 'Space'; */
+/* .container .card:after {
+    content: 'Space';
     position: absolute;
     top: 30%;
     left: -20%;
@@ -50,7 +50,7 @@ body {
     font-weight: 800;
     font-style: italic;
     color: rgba(255, 255, 255, .04);
-}
+} */
 
 .container .card .imgBx {
     position: absolute;
