@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planetary Orbit</title>
+
+    <link rel="stylesheet" href="/styles.99443e32.css">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+
+    <script src="/planetary-orbit.823873dd.js" defer=""></script>
+    <script src="https://unpkg.com/earcut@2.1.1/dist/earcut.min.js" defer=""></script>
+
+<script src="/styles.99443e32.js"></script></head>
+
+<body>
+    <!--Canvas for scene-->
+    <canvas id="canvas"></canvas>
+
+    <img src="/pause button.2516064b.png" width="30" height="30" alt="pause/play the audio" id="audioButton">
+    <div class="audioContainer">
+        <input type="range" min="1" max="100" value="1" id="audioSlider">
+    </div>
+    <p id="audioDuration">0:00</p>
+
+    <div class="controlsCard gsapFade">
+        <h3>Controls</h3>
+        <div id="controls">
+            <div class="controlFlex left">
+                <p class="controlIcon"><img src="/left-click.ec75efa5.png"></p>
+                <p class="controlIcon"><img src="/scroll.6cb7e9ef.png"></p>
+                <p class="controlIcon"><img src="/right-click.1458f9b0.png"></p>
+                <p class="controlIcon">
+                    <img src="/left-click.ec75efa5.png"> + <img src="/D-key.f23b3777.png">
+                </p>
+                <p class="controlIcon">
+                    <img src="/left-click.ec75efa5.png"> + <img src="/F-key.48be191b.png">
+                </p>
+            </div>
+            <div class="controlLine"></div>
+            <div class="controlFlex">
+                <p class="controlIcon right">Rotate view</p>
+                <p class="controlIcon right">Zoom in/out</p>
+                <p class="controlIcon right">Pan view</p>
+                <p class="controlIcon right">Drag selected planet</p>
+                <p class="controlIcon right" style="line-height: normal;">Focus on selected object</p>
+            </div>
+        </div>
+        <p class="continueText">Click to continue</p>
+    </div>
+
+    <div class="formulaDiv" id="circularVelocity">
+        <img src="https://latex.codecogs.com/gif.latex?\dpi{300}&space;{\color{Yellow}&space;v&space;=&space;\sqrt{\frac{GM}{r}}}" title="Circular Velocity" class="eqImg">
+        <img src="https://latex.codecogs.com/gif.latex?\dpi{300}&space;{\color{Yellow}&space;G&space;=&space;6.67&space;\times&space;10^{-11}&space;\;&space;\frac{N\cdot m^{2}}{kg^{2}}}" title="Gravitational Constant" class="GImg">
+    </div>
+    <div class="formulaDiv" id="visViva">
+        <img src="https://latex.codecogs.com/gif.latex?\dpi{300}&space;{\color{Yellow}&space;v&space;=&space;\sqrt{GM\left&space;(&space;\frac{2}{r}&space;-&space;\frac{1}{a}&space;\right&space;)}}" title="Vis-Viva Equation" class="visViva">
+    </div>
+
+    
+
+</body>
+</html>

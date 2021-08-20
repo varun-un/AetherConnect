@@ -1,7 +1,7 @@
 * {
     margin: 0;
     padding: 0;
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Roboto';
 }
 
 /* body {
@@ -136,9 +136,9 @@
 
 .container .card .contentBx .desc p {
     color: #fff;
-    font-weight: 300;
-    font-size: 12px;
-    text-transform: uppercase;
+    font-weight: 200;
+    font-size: 13px;
+    /* text-transform: uppercase; */
     letter-spacing: 2px;
     margin-right: 10px;
 }
