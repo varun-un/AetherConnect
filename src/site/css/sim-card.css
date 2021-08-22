@@ -64,15 +64,15 @@
 
 .container .card:hover .imgBx {
     top: 5%;
-    transform: translateY(0%);
+    transform: translateY(5%);
 }
 
 .container .card .imgBx img {
     position: absolute;
     top: 30%;
     left: 50%;
-    transform: translate(-50%, -50%) rotate(-25deg);
-    width: 270px;
+    transform: translate(-50%, -50%);
+    width: 290px;
 }
 
 .container .card .contentBx {

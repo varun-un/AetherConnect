@@ -26,9 +26,9 @@ var simulations = [
         creator: "Varun Unnithan",
         description: "Learn about the shape a planet's orbit follows, and the features of its orbit.",      
         grades: "8 - 11",
-        fileLocation: "../__/simulations/planetaryOrbit/planetary-orbit.html",
-        imageLocation: require("./thumbnails/nike_shoe.png"),
-        color: "#bbbbbb"
+        fileLocation: "../simulations/planetaryOrbit/planetary-orbit.html",
+        imageLocation: require("./thumbnails/planetaryOrbit.png"),
+        color: "#ed7117"        //ff8c00
     },
     {
         title: "Planetary Orbit",
@@ -36,10 +36,17 @@ var simulations = [
         description: "Learn about the shape a planet's orbit follows, and the features of its orbit.",
         grades: "8 - 11",
         fileLocation: "../simulations/planetaryOrbit/planetary-orbit.html",
-        imageLocation: require("./thumbnails/nike_shoe.png"),
-        color: "#ff0000"
+        imageLocation: require("./thumbnails/planetaryOrbit.png"),
+        color: "#ff8c00"
     }
 ]
+
+//add underscore to sim links bc for some reason it doesn't work without it
+for (let i = 0; i < simulations.length; i++) {
+    if (simulations[i].fileLocation.startsWith("../")) {
+        simulations[i].fileLocation = simulations[i].fileLocation.slice(0, 3) + "__/" + simulations[i].fileLocation.slice(3)
+    }
+}
 
 function SimCard(props) {
     return (
@@ -77,4 +84,4 @@ render(
             </SimCard>
         ))}
     </Fragment>
-, document.body)
+, document.getElementById('root'))

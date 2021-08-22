@@ -97,13 +97,13 @@ var createScene = function () {
     var sunlight = new BABYLON.PointLight("sunlight", new BABYLON.Vector3(0,0,0), scene)
     sunlight.intensity = 1.5
 
-    // //environment lighting
-    // var downLight = new BABYLON.HemisphericLight("downlight", new BABYLON.Vector3(0, 1, 0), scene)
-    // downLight.intensity = 0.2
-    // downLight.includedOnlyMeshes = scene.planets
-    // var upLight = new BABYLON.HemisphericLight("uplight", new BABYLON.Vector3(0, -1, 0), scene)
-    // upLight.intensity = 0.2
-    // upLight.includedOnlyMeshes = scene.planets
+    //environment lighting
+    var downLight = new BABYLON.HemisphericLight("downlight", new BABYLON.Vector3(0, 1, 0), scene)
+    downLight.intensity = 0.2
+    downLight.includedOnlyMeshes = scene.planets
+    var upLight = new BABYLON.HemisphericLight("uplight", new BABYLON.Vector3(0, -1, 0), scene)
+    upLight.intensity = 0.2
+    upLight.includedOnlyMeshes = scene.planets
 
 
     //set settings for focusing and camera action w/ meshes in scene
@@ -443,23 +443,23 @@ engine.runRenderLoop(function () {
         scene.planets[i].setAbsolutePosition(scene.planets[i].ellipse[Math.floor(scene.planets[i].orbitSegment)])
     }
     
-    scene.render()
-
+    
     //earth velocity vector
     if (showEarthVelocity && scene.getMeshByName("velocityVector") != null){
-
+        
         var velocityVector = scene.getMeshByName("velocityVector")
         var earth = scene.getMeshByName("earth")
-
+        
         //get velocity of earth
         var velocity = visViva(149600000, earth.position.length() * 14960000)
-
+        
         velocityVector.updateFunction(velocityVector, velocityVector.shape, velocityVector.path, velocity / 30, earth.position,
             velocityVector.velocityVectorDirections[Math.floor(earth.orbitSegment)])
-
+            
     }
-
-});
+        
+    scene.render()
+    });
 
 window.addEventListener("resize", function () {
     engine.resize()

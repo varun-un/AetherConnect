@@ -750,8 +750,8 @@ var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
 module.hot.accept(reloadCSS);
-},{"_css_loader":"../../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"thumbnails/nike_shoe.png":[function(require,module,exports) {
-module.exports = "/nike_shoe.64f45bc2.png";
+},{"_css_loader":"../../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"thumbnails/planetaryOrbit.png":[function(require,module,exports) {
+module.exports = "/planetaryOrbit.6c7185f6.png";
 },{}],"sim-cards.jsx":[function(require,module,exports) {
 "use strict";
 
@@ -764,26 +764,44 @@ require("./css/sim-card.css");
 /** @jsx h */
 
 /**
- * 
- * @param 
+ * @typedef {Object} SimulationDetails
+ * @property {string} title - The title of the simulation
+ * @property {string} creator - The creator(s) of the simulation
+ * @property {string} description - A short description of the simulation (under 180 characters)
+ * @property {string} grades - The range of grades levels that the simulation is suitable for
+ * @property {string} fileLocation - The location of the simulation's start HTML file (relative to this file)
+ * @property {any} imageLocation - The path to the thumbnail image of the simulation (relative to this file) passed into require()
+ * @property {string} color - The color to use for the simulation's card
+**/
+
+/**
+ * Add new simulations' details here
+ * @type {Array.<SimulationDetails>} - An array of SimulationDetails objects
 **/
 var simulations = [{
   title: "Planetary Orbit",
   creator: "Varun Unnithan",
   description: "Learn about the shape a planet's orbit follows, and the features of its orbit.",
   grades: "8 - 11",
-  fileLocation: "../__/simulations/planetaryOrbit/planetary-orbit.html",
-  imageLocation: require("./thumbnails/nike_shoe.png"),
-  color: "#bbbbbb"
+  fileLocation: "../simulations/planetaryOrbit/planetary-orbit.html",
+  imageLocation: require("./thumbnails/planetaryOrbit.png"),
+  color: "#ed7117" //ff8c00
+
 }, {
   title: "Planetary Orbit",
   creator: "Varun Unnithan",
   description: "Learn about the shape a planet's orbit follows, and the features of its orbit.",
   grades: "8 - 11",
   fileLocation: "../simulations/planetaryOrbit/planetary-orbit.html",
-  imageLocation: require("./thumbnails/nike_shoe.png"),
-  color: "#ff0000"
-}];
+  imageLocation: require("./thumbnails/planetaryOrbit.png"),
+  color: "#ff8c00"
+}]; //add underscore to sim links bc for some reason it doesn't work without it
+
+for (var i = 0; i < simulations.length; i++) {
+  if (simulations[i].fileLocation.startsWith("../")) {
+    simulations[i].fileLocation = simulations[i].fileLocation.slice(0, 3) + "__/" + simulations[i].fileLocation.slice(3);
+  }
+}
 
 function SimCard(props) {
   return (0, _preact.h)("div", {
@@ -816,8 +834,8 @@ function SimCard(props) {
     grades: sim.grades,
     link: sim.fileLocation
   }, sim.description);
-})), document.body);
-},{"preact":"../../node_modules/preact/dist/preact.module.js","preact/hooks":"../../node_modules/preact/hooks/dist/hooks.module.js","./css/sim-card.css":"css/sim-card.css","./thumbnails/nike_shoe.png":"thumbnails/nike_shoe.png"}],"../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+})), document.getElementById('root'));
+},{"preact":"../../node_modules/preact/dist/preact.module.js","preact/hooks":"../../node_modules/preact/hooks/dist/hooks.module.js","./css/sim-card.css":"css/sim-card.css","./thumbnails/planetaryOrbit.png":"thumbnails/planetaryOrbit.png"}],"../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -845,7 +863,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55957" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60555" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
