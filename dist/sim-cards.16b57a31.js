@@ -501,184 +501,7 @@ n = c.slice, exports.options = l = {
 }, _.prototype.forceUpdate = function (n) {
   this.__v && (this.__e = !0, n && this.__h.push(n), m(this));
 }, _.prototype.render = d, t = [], o = "function" == typeof Promise ? Promise.prototype.then.bind(Promise.resolve()) : setTimeout, g.__r = 0, f = 0;
-},{}],"../../node_modules/preact/hooks/dist/hooks.module.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.useState = l;
-exports.useReducer = p;
-exports.useEffect = y;
-exports.useLayoutEffect = h;
-exports.useRef = s;
-exports.useImperativeHandle = _;
-exports.useMemo = d;
-exports.useCallback = A;
-exports.useContext = F;
-exports.useDebugValue = T;
-exports.useErrorBoundary = q;
-
-var _preact = require("preact");
-
-var t,
-    u,
-    r,
-    o = 0,
-    i = [],
-    c = _preact.options.__b,
-    f = _preact.options.__r,
-    e = _preact.options.diffed,
-    a = _preact.options.__c,
-    v = _preact.options.unmount;
-
-function m(t, r) {
-  _preact.options.__h && _preact.options.__h(u, t, o || r), o = 0;
-  var i = u.__H || (u.__H = {
-    __: [],
-    __h: []
-  });
-  return t >= i.__.length && i.__.push({}), i.__[t];
-}
-
-function l(n) {
-  return o = 1, p(w, n);
-}
-
-function p(n, r, o) {
-  var i = m(t++, 2);
-  return i.t = n, i.__c || (i.__ = [o ? o(r) : w(void 0, r), function (n) {
-    var t = i.t(i.__[0], n);
-    i.__[0] !== t && (i.__ = [t, i.__[1]], i.__c.setState({}));
-  }], i.__c = u), i.__;
-}
-
-function y(r, o) {
-  var i = m(t++, 3);
-  !_preact.options.__s && k(i.__H, o) && (i.__ = r, i.__H = o, u.__H.__h.push(i));
-}
-
-function h(r, o) {
-  var i = m(t++, 4);
-  !_preact.options.__s && k(i.__H, o) && (i.__ = r, i.__H = o, u.__h.push(i));
-}
-
-function s(n) {
-  return o = 5, d(function () {
-    return {
-      current: n
-    };
-  }, []);
-}
-
-function _(n, t, u) {
-  o = 6, h(function () {
-    "function" == typeof n ? n(t()) : n && (n.current = t());
-  }, null == u ? u : u.concat(n));
-}
-
-function d(n, u) {
-  var r = m(t++, 7);
-  return k(r.__H, u) && (r.__ = n(), r.__H = u, r.__h = n), r.__;
-}
-
-function A(n, t) {
-  return o = 8, d(function () {
-    return n;
-  }, t);
-}
-
-function F(n) {
-  var r = u.context[n.__c],
-      o = m(t++, 9);
-  return o.c = n, r ? (null == o.__ && (o.__ = !0, r.sub(u)), r.props.value) : n.__;
-}
-
-function T(t, u) {
-  _preact.options.useDebugValue && _preact.options.useDebugValue(u ? u(t) : t);
-}
-
-function q(n) {
-  var r = m(t++, 10),
-      o = l();
-  return r.__ = n, u.componentDidCatch || (u.componentDidCatch = function (n) {
-    r.__ && r.__(n), o[1](n);
-  }), [o[0], function () {
-    o[1](void 0);
-  }];
-}
-
-function x() {
-  i.forEach(function (t) {
-    if (t.__P) try {
-      t.__H.__h.forEach(g), t.__H.__h.forEach(j), t.__H.__h = [];
-    } catch (u) {
-      t.__H.__h = [], _preact.options.__e(u, t.__v);
-    }
-  }), i = [];
-}
-
-_preact.options.__b = function (n) {
-  u = null, c && c(n);
-}, _preact.options.__r = function (n) {
-  f && f(n), t = 0;
-  var r = (u = n.__c).__H;
-  r && (r.__h.forEach(g), r.__h.forEach(j), r.__h = []);
-}, _preact.options.diffed = function (t) {
-  e && e(t);
-  var o = t.__c;
-  o && o.__H && o.__H.__h.length && (1 !== i.push(o) && r === _preact.options.requestAnimationFrame || ((r = _preact.options.requestAnimationFrame) || function (n) {
-    var t,
-        u = function () {
-      clearTimeout(r), b && cancelAnimationFrame(t), setTimeout(n);
-    },
-        r = setTimeout(u, 100);
-
-    b && (t = requestAnimationFrame(u));
-  })(x)), u = void 0;
-}, _preact.options.__c = function (t, u) {
-  u.some(function (t) {
-    try {
-      t.__h.forEach(g), t.__h = t.__h.filter(function (n) {
-        return !n.__ || j(n);
-      });
-    } catch (r) {
-      u.some(function (n) {
-        n.__h && (n.__h = []);
-      }), u = [], _preact.options.__e(r, t.__v);
-    }
-  }), a && a(t, u);
-}, _preact.options.unmount = function (t) {
-  v && v(t);
-  var u = t.__c;
-  if (u && u.__H) try {
-    u.__H.__.forEach(g);
-  } catch (t) {
-    _preact.options.__e(t, u.__v);
-  }
-};
-var b = "function" == typeof requestAnimationFrame;
-
-function g(n) {
-  var t = u;
-  "function" == typeof n.__c && n.__c(), u = t;
-}
-
-function j(n) {
-  var t = u;
-  n.__c = n.__(), u = t;
-}
-
-function k(n, t) {
-  return !n || n.length !== t.length || t.some(function (t, u) {
-    return t !== n[u];
-  });
-}
-
-function w(n, t) {
-  return "function" == typeof t ? t(n) : t;
-}
-},{"preact":"../../node_modules/preact/dist/preact.module.js"}],"../../node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
+},{}],"../../node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
 var bundleURL = null;
 
 function getBundleURLCached() {
@@ -757,8 +580,6 @@ module.exports = "/planetaryOrbit.6c7185f6.png";
 
 var _preact = require("preact");
 
-var _hooks = require("preact/hooks");
-
 require("./css/sim-card.css");
 
 /** @jsx h */
@@ -770,7 +591,8 @@ require("./css/sim-card.css");
  * @property {string} description - A short description of the simulation (under 180 characters)
  * @property {string} grades - The range of grades levels that the simulation is suitable for
  * @property {string} fileLocation - The location of the simulation's start HTML file (relative to this file)
- * @property {any} imageLocation - The path to the thumbnail image of the simulation (relative to this file) passed into require()
+ * @property {any} imageLocation - The path to the thumbnail image of the simulation (relative to this file) passed into require().
+ * The recommended image aspect ratio is 16:9.
  * @property {string} color - The color to use for the simulation's card
 **/
 
@@ -787,14 +609,6 @@ var simulations = [{
   imageLocation: require("./thumbnails/planetaryOrbit.png"),
   color: "#ed7117" //ff8c00
 
-}, {
-  title: "Planetary Orbit",
-  creator: "Varun Unnithan",
-  description: "Learn about the shape a planet's orbit follows, and the features of its orbit.",
-  grades: "8 - 11",
-  fileLocation: "../simulations/planetaryOrbit/planetary-orbit.html",
-  imageLocation: require("./thumbnails/planetaryOrbit.png"),
-  color: "#ff8c00"
 }]; //add underscore to sim links bc for some reason it doesn't work without it
 
 for (var i = 0; i < simulations.length; i++) {
@@ -835,7 +649,7 @@ function SimCard(props) {
     link: sim.fileLocation
   }, sim.description);
 })), document.getElementById('root'));
-},{"preact":"../../node_modules/preact/dist/preact.module.js","preact/hooks":"../../node_modules/preact/hooks/dist/hooks.module.js","./css/sim-card.css":"css/sim-card.css","./thumbnails/planetaryOrbit.png":"thumbnails/planetaryOrbit.png"}],"../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"preact":"../../node_modules/preact/dist/preact.module.js","./css/sim-card.css":"css/sim-card.css","./thumbnails/planetaryOrbit.png":"thumbnails/planetaryOrbit.png"}],"../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -863,7 +677,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60555" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "62591" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

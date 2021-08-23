@@ -1,5 +1,4 @@
-import { h, render, Component, Fragment } from 'preact'
-import { useState, useEffect } from 'preact/hooks'
+import { h, render, Fragment } from 'preact'
 /** @jsx h */
 
 import './css/sim-card.css'
@@ -12,7 +11,8 @@ import './css/sim-card.css'
  * @property {string} description - A short description of the simulation (under 180 characters)
  * @property {string} grades - The range of grades levels that the simulation is suitable for
  * @property {string} fileLocation - The location of the simulation's start HTML file (relative to this file)
- * @property {any} imageLocation - The path to the thumbnail image of the simulation (relative to this file) passed into require()
+ * @property {any} imageLocation - The path to the thumbnail image of the simulation (relative to this file) passed into require().
+ * The recommended image aspect ratio is 16:9.
  * @property {string} color - The color to use for the simulation's card
 **/
 
@@ -30,15 +30,7 @@ var simulations = [
         imageLocation: require("./thumbnails/planetaryOrbit.png"),
         color: "#ed7117"        //ff8c00
     },
-    {
-        title: "Planetary Orbit",
-        creator: "Varun Unnithan",
-        description: "Learn about the shape a planet's orbit follows, and the features of its orbit.",
-        grades: "8 - 11",
-        fileLocation: "../simulations/planetaryOrbit/planetary-orbit.html",
-        imageLocation: require("./thumbnails/planetaryOrbit.png"),
-        color: "#ff8c00"
-    }
+    
 ]
 
 //add underscore to sim links bc for some reason it doesn't work without it
